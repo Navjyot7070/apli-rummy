@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>आपली रमी - 151 Pool Multiplayer</title>
+  <title>आपली रमी - 151 Pool Pro</title>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#06200f" />
   <link rel="apple-touch-icon" href="logo.png" />
+  <!-- Tailwind CSS, Supabase JS & PeerJS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <style>
     * {
@@ -24,15 +26,17 @@
     }
     .card-overlap {
       margin-left: -18px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      will-change: transform;
+      transform: translateZ(0);
+      transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.2s ease;
       touch-action: none;
     }
     .card-overlap:first-child {
       margin-left: 0;
     }
     .card-selected {
-      transform: translateY(-16px) scale(1.05) !important;
-      box-shadow: 0 8px 20px rgba(250, 204, 21, 0.85) !important;
+      transform: translateY(-18px) rotate(-1.5deg) scale(1.06) !important;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.7), 0 0 16px rgba(250, 204, 21, 0.9) !important;
       border-color: #facc15 !important;
       z-index: 50 !important;
     }
@@ -46,40 +50,16 @@
       box-shadow: 0 0 20px #facc15 !important;
     }
 
-    /* Landscape (आडवा मोबाईल) ऑटो-फिट */
     @media (orientation: landscape) {
-      .table-felt {
-        padding: 0.4rem 1.2rem !important;
-        gap: 1.25rem !important;
-      }
-      .table-deck-card {
-        width: 3.25rem !important;
-        height: 4.75rem !important;
-      }
-      .hand-card-size {
-        width: 2.6rem !important;
-        height: 4rem !important;
-      }
-      #groups-container {
-        min-height: 80px !important;
-        padding-top: 2px !important;
-        padding-bottom: 2px !important;
-      }
+      .table-felt { padding: 0.35rem 1.2rem !important; gap: 1.25rem !important; }
+      .table-deck-card { width: 3.25rem !important; height: 4.75rem !important; }
+      .hand-card-size { width: 2.6rem !important; height: 4rem !important; }
+      #groups-container { min-height: 80px !important; }
     }
-
-    /* Portrait (सरळ मोबाईल) ऑटो-फिट */
     @media (orientation: portrait) {
-      .table-deck-card {
-        width: 3.75rem;
-        height: 5.5rem;
-      }
-      .hand-card-size {
-        width: 2.85rem;
-        height: 4.4rem;
-      }
-      #groups-container {
-        min-height: 105px;
-      }
+      .table-deck-card { width: 3.75rem; height: 5.5rem; }
+      .hand-card-size { width: 2.85rem; height: 4.4rem; }
+      #groups-container { min-height: 105px; }
     }
   </style>
 </head>
@@ -90,7 +70,7 @@
     <div class="relative flex flex-col items-center max-w-xs w-full text-center">
       <img src="logo.png" alt="आपली रमी" class="w-40 h-40 rounded-3xl shadow-2xl border-4 border-amber-400 object-cover mb-4 ring-4 ring-amber-400/20" />
       <h1 class="text-3xl font-black text-amber-400 tracking-wider">आपली रमी</h1>
-      <p class="text-xs text-emerald-400 font-extrabold mt-1 tracking-widest uppercase">151 Pool Table</p>
+      <p class="text-xs text-emerald-400 font-extrabold mt-1 tracking-widest uppercase">151 Pool Pro</p>
       <div class="mt-6 flex items-center gap-2 text-xs text-slate-300 font-semibold bg-black/40 px-4 py-1.5 rounded-full border border-emerald-500/20">
         <div class="w-3.5 h-3.5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
         <span>लॉबी लोड होत आहे...</span>
@@ -98,49 +78,71 @@
     </div>
   </div>
 
-  <!-- Lobby Screen -->
-  <div id="lobby-screen" class="fixed inset-0 z-40 bg-black/90 flex flex-col items-center justify-center p-4">
-    <div class="bg-gradient-to-b from-slate-900 to-emerald-950 border-2 border-amber-400/60 rounded-3xl max-w-md w-full p-6 shadow-2xl text-center">
+  <!-- Auth & Lobby Screen -->
+  <div id="lobby-screen" class="fixed inset-0 z-40 bg-black/90 flex flex-col items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-gradient-to-b from-slate-900 to-emerald-950 border-2 border-amber-400/60 rounded-3xl max-w-md w-full p-5 shadow-2xl text-center">
       <div class="text-3xl mb-1">🃏</div>
       <h2 class="text-2xl font-black text-amber-400">आपली रमी - 151 Pool</h2>
-      <p class="text-xs text-slate-400 mt-1">कुटुंब आणि मित्रांसोबत खाजगी टेबलावर खेळा</p>
+      <p class="text-xs text-slate-400 mt-0.5">कुटुंब आणि मित्रांसोबत खाजगी टेबलावर खेळा</p>
 
-      <div class="mt-5 flex flex-col gap-3 text-left">
+      <!-- Supabase Auth Section -->
+      <div id="auth-box" class="mt-4 p-3 bg-black/40 rounded-2xl border border-emerald-800/50 text-left">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-xs font-bold text-amber-300">लॉगिन / रजिस्ट्रेशन</span>
+          <span id="auth-status-tag" class="text-[10px] text-slate-400">लॉगिन केलेले नाही</span>
+        </div>
+        <div id="auth-inputs" class="flex flex-col gap-2">
+          <input id="auth-email" type="email" placeholder="तुमचा ईमेल (Email)" class="w-full bg-black/60 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-amber-400" />
+          <input id="auth-password" type="password" placeholder="पासवर्ड (Password)" class="w-full bg-black/60 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-amber-400" />
+          <div class="flex gap-2 mt-1">
+            <button onclick="handleSupabaseLogin()" class="flex-1 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 rounded-lg shadow">लॉगिन</button>
+            <button onclick="handleSupabaseSignup()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs py-1.5 rounded-lg border border-slate-600">नवीन खाते</button>
+          </div>
+        </div>
+        <div id="auth-user-info" class="hidden flex justify-between items-center py-1">
+          <span id="logged-user-name" class="text-xs font-bold text-emerald-400">👤 Navjyot</span>
+          <button onclick="handleSupabaseLogout()" class="text-[10px] text-red-400 underline">बाहेर पडा</button>
+        </div>
+      </div>
+
+      <!-- Player Name & Tables -->
+      <div class="mt-3 flex flex-col gap-2.5 text-left">
         <div>
-          <label class="text-xs font-bold text-slate-300 ml-1">तुमचे नाव:</label>
-          <input id="player-name-input" type="text" placeholder="उदा. नवज्योत / मित्र" class="w-full bg-black/50 border border-emerald-600 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400 mt-1" />
+          <label class="text-[11px] font-bold text-slate-300 ml-1">टेबलावरील नाव:</label>
+          <input id="player-name-input" type="text" placeholder="तुमचे नाव" class="w-full bg-black/50 border border-emerald-600 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-amber-400 mt-1" />
         </div>
 
-        <button onclick="createRoom()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-black font-black text-sm py-2.5 rounded-xl shadow-lg mt-2 active:scale-95 transition">
+        <button onclick="createRoom()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-black font-black text-sm py-2 rounded-xl shadow-lg active:scale-95 transition">
           + नवीन टेबल तयार करा (Create Table)
         </button>
 
-        <div class="flex items-center gap-2 my-1 text-slate-500 text-xs">
+        <div class="flex items-center gap-2 my-0.5 text-slate-500 text-xs">
           <div class="flex-1 h-[1px] bg-slate-700"></div>
           <span>किंवा कोड टाकून जॉईन करा</span>
           <div class="flex-1 h-[1px] bg-slate-700"></div>
         </div>
 
         <div class="flex gap-2">
-          <input id="room-code-input" type="text" placeholder="४-अंकी कोड" class="w-full bg-black/50 border border-emerald-600 rounded-xl px-3 py-2 text-sm text-white text-center font-bold tracking-widest focus:outline-none focus:border-amber-400 uppercase" maxlength="6" />
+          <input id="room-code-input" type="text" placeholder="४-अंकी कोड" class="w-full bg-black/50 border border-emerald-600 rounded-xl px-3 py-1.5 text-sm text-white text-center font-bold tracking-widest focus:outline-none focus:border-amber-400 uppercase" maxlength="6" />
           <button onclick="joinRoom()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm px-5 rounded-xl shadow active:scale-95 transition">
             जॉईन
           </button>
         </div>
       </div>
 
-      <div id="waiting-area" class="hidden mt-6 pt-4 border-t border-slate-700 text-left">
+      <!-- Waiting Area -->
+      <div id="waiting-area" class="hidden mt-4 pt-3 border-t border-slate-700 text-left">
         <div class="flex justify-between items-center mb-2">
           <span class="text-xs text-slate-400 font-bold">टेबल कोड: <b id="display-room-code" class="text-amber-400 text-base ml-1 tracking-wider">----</b></span>
-          <button onclick="shareWhatsAppInvite()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-lg flex items-center gap-1 shadow">
+          <button onclick="shareWhatsAppInvite()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shadow">
             <span>📲 WhatsApp आमंत्रण</span>
           </button>
         </div>
 
-        <div class="text-xs text-slate-300 font-bold mb-1">खेळाडू (<span id="joined-count">1</span>/6):</div>
-        <div id="lobby-players-list" class="flex flex-wrap gap-2 py-2"></div>
+        <div class="text-[11px] text-slate-300 font-bold mb-1">खेळाडू (<span id="joined-count">1</span>/6):</div>
+        <div id="lobby-players-list" class="flex flex-wrap gap-1.5 py-1"></div>
 
-        <button id="start-game-btn" onclick="hostStartGame()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm py-2.5 rounded-xl shadow-lg mt-3 transition active:scale-95">
+        <button id="start-game-btn" onclick="hostStartGame()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm py-2 rounded-xl shadow-lg mt-3 transition active:scale-95">
           खेळ सुरू करा (Start Game)
         </button>
       </div>
@@ -173,7 +175,6 @@
   <!-- Table Arena -->
   <div class="flex-1 flex flex-col justify-between items-center relative px-2 py-1 overflow-hidden">
     
-    <!-- Opponents Section -->
     <div id="opponents-strip" class="flex justify-around items-center w-full max-w-4xl mx-auto px-2 shrink-0"></div>
 
     <!-- Center Felt Table -->
@@ -202,7 +203,6 @@
 
     </div>
 
-    <!-- Active Turn Pill -->
     <div id="status-pill" class="text-center font-bold text-[11px] bg-black/75 text-amber-300 px-4 py-0.5 rounded-full border border-amber-500/30 shadow shrink-0">
       तुमची पाळी! बंद किंवा उघड्या डेकमधून १ पान उचला.
     </div>
@@ -222,8 +222,8 @@
         <button onclick="groupSelectedCards()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-[10px] font-black px-2 py-1 rounded shadow border border-blue-400/50">
           ग्रुप
         </button>
-        <button onclick="autoSortHand()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-[10px] font-black px-2 py-1 rounded shadow border border-indigo-400/50">
-          ऑटो-सॉर्ट
+        <button onclick="smartAutoSort()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-[10px] font-black px-2 py-1 rounded shadow border border-indigo-400/50">
+          स्मार्ट-सॉर्ट
         </button>
         <button onclick="playerDrop()" class="bg-red-800 hover:bg-red-700 active:scale-95 text-white text-[10px] font-bold px-2 py-1 rounded border border-red-500/40">
           ड्रॉप
@@ -234,11 +234,133 @@
       </div>
     </div>
 
-    <!-- Hand Groups Container -->
     <div id="groups-container" class="w-full overflow-x-auto no-scrollbar py-0.5 flex items-start justify-center gap-1.5"></div>
   </div>
 
   <script>
+    // --- Supabase Config (तुमचे प्रोजेक्ट क्रेडेंशियल्स इथे टाका) ---
+    const SUPABASE_URL = "https://your-project.supabase.co";
+    const SUPABASE_ANON_KEY = "your-anon-key";
+    let supabaseClient = null;
+
+    try {
+      if (SUPABASE_URL.indexOf("your-project") === -1) {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch(e) { console.log("Supabase Init Error", e); }
+
+    async function handleSupabaseLogin() {
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value.trim();
+      if (!email || !password) return alert("ईमेल आणि पासवर्ड टाका!");
+      if (!supabaseClient) {
+        document.getElementById('player-name-input').value = email.split('@')[0];
+        setAuthUserUI(email.split('@')[0]);
+        return;
+      }
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) alert("लॉगिन एरर: " + error.message);
+      else {
+        const username = data.user.email.split('@')[0];
+        document.getElementById('player-name-input').value = username;
+        setAuthUserUI(username);
+      }
+    }
+
+    async function handleSupabaseSignup() {
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value.trim();
+      if (!email || !password) return alert("ईमेल आणि पासवर्ड टाका!");
+      if (!supabaseClient) return alert("Supabase URL आणि Key कॉन्फिगर करा.");
+      const { data, error } = await supabaseClient.auth.signUp({ email, password });
+      if (error) alert("साइनअप एरर: " + error.message);
+      else alert("साइनअप यशस्वी! आता लॉगिन करा.");
+    }
+
+    async function handleSupabaseLogout() {
+      if (supabaseClient) await supabaseClient.auth.signOut();
+      document.getElementById('auth-inputs').classList.remove('hidden');
+      document.getElementById('auth-user-info').classList.add('hidden');
+      document.getElementById('auth-status-tag').innerText = "लॉगिन केलेले नाही";
+      document.getElementById('player-name-input').value = "";
+    }
+
+    function setAuthUserUI(name) {
+      document.getElementById('auth-inputs').classList.add('hidden');
+      document.getElementById('auth-user-info').classList.remove('hidden');
+      document.getElementById('logged-user-name').innerText = `👤 ${name}`;
+      document.getElementById('auth-status-tag').innerText = "लॉगिन पूर्ण ✓";
+    }
+
+    // --- Web Audio API Engine ---
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playDrawSound() {
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(480, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(160, ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + 0.08);
+      } catch(e) {}
+    }
+
+    function playDiscardSound() {
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.4, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + 0.12);
+      } catch(e) {}
+    }
+
+    function playTimerTick() {
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(850, ctx.currentTime);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.04);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + 0.04);
+      } catch(e) {}
+    }
+
+    function playWinSound() {
+      try {
+        const ctx = getAudioContext();
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.12);
+          gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + i * 0.12 + 0.25);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + i * 0.12);
+          osc.stop(ctx.currentTime + i * 0.12 + 0.25);
+        });
+      } catch(e) {}
+    }
+
+    // --- Card Setup ---
     const SUITS = [
       { name: 'SPADE', symbol: '♠', color: 'text-zinc-900', order: 1 },
       { name: 'HEART', symbol: '♥', color: 'text-red-600', order: 2 },
@@ -404,7 +526,7 @@
       players.forEach(p => {
         if (!p.out) {
           const cards = drawPile.splice(0, 13);
-          p.groups = autoDivideIntoSuits(cards);
+          p.groups = smartAutoGroupLogic(cards, wildJoker);
           p.hasDrawn = false;
           p.firstTurnDone = false;
         }
@@ -418,15 +540,64 @@
       broadcastState('GAME_STARTED');
     }
 
-    function autoDivideIntoSuits(cards) {
-      cards.sort((a, b) => (a.suit.order !== b.suit.order ? a.suit.order - b.suit.order : a.rank - b.rank));
-      let suitMap = {};
-      cards.forEach(c => {
-        let key = isCardJoker(c) ? 'JOKER' : c.suit.name;
-        if (!suitMap[key]) suitMap[key] = [];
-        suitMap[key].push(c);
+    // --- Smart Auto Grouping Algorithm (Pure Seq, Impure Seq & Sets) ---
+    function smartAutoGroupLogic(cards, currentWildJoker) {
+      let remaining = [...cards];
+      let finalGroups = [];
+
+      // 1. Pure Sequences शोधणे
+      ['SPADE', 'HEART', 'CLUB', 'DIAMOND'].forEach(suitName => {
+        let suitCards = remaining.filter(c => c.suit.name === suitName && c.rank !== 0 && c.rank !== currentWildJoker.rank);
+        suitCards.sort((a, b) => a.rank - b.rank);
+
+        for (let i = 0; i <= suitCards.length - 3; i++) {
+          if (suitCards[i+1].rank === suitCards[i].rank + 1 && suitCards[i+2].rank === suitCards[i+1].rank + 1) {
+            let pureSeq = [suitCards[i], suitCards[i+1], suitCards[i+2]];
+            finalGroups.push(pureSeq);
+            pureSeq.forEach(c => {
+              let idx = remaining.findIndex(rc => rc.id === c.id);
+              if (idx !== -1) remaining.splice(idx, 1);
+            });
+            break;
+          }
+        }
       });
-      return Object.values(suitMap);
+
+      // 2. Sets शोधणे (समान क्रमांक, भिन्न रंग)
+      for (let r = 1; r <= 13; r++) {
+        let sameRank = remaining.filter(c => c.rank === r && c.rank !== currentWildJoker.rank);
+        let uniqueSuits = new Set(sameRank.map(c => c.suit.name));
+        if (sameRank.length >= 3 && uniqueSuits.size === sameRank.length) {
+          finalGroups.push(sameRank);
+          sameRank.forEach(c => {
+            let idx = remaining.findIndex(rc => rc.id === c.id);
+            if (idx !== -1) remaining.splice(idx, 1);
+          });
+        }
+      }
+
+      // 3. उरलेली पाने रंगांनुसार वेगळी करणे
+      if (remaining.length > 0) {
+        let suitMap = {};
+        remaining.forEach(c => {
+          let k = isCardJoker(c) ? 'JOKER' : c.suit.name;
+          if (!suitMap[k]) suitMap[k] = [];
+          suitMap[k].push(c);
+        });
+        finalGroups.push(...Object.values(suitMap));
+      }
+
+      return finalGroups;
+    }
+
+    function smartAutoSort() {
+      const myObj = players.find(p => p.id === myPlayerId);
+      if (!myObj || !myObj.groups) return;
+      let allCards = myObj.groups.flat();
+      myObj.groups = smartAutoGroupLogic(allCards, wildJoker);
+      selectedCards = [];
+      updateUI();
+      broadcastState('STATE_SYNC');
     }
 
     function resetTurnTimer() {
@@ -439,8 +610,9 @@
         timerValue--;
         document.getElementById('timer-sec').innerText = `${timerValue}s`;
 
-        if (timerValue <= 10) {
+        if (timerValue <= 5) {
           timerBox.classList.add('border-red-500', 'text-red-400');
+          playTimerTick();
         }
 
         if (timerValue <= 0) {
@@ -736,6 +908,7 @@
       if (players[currentTurnIndex]?.id !== myPlayerId) return alert("तुमची पाळी येईपर्यंत थांबा!");
       if (myObj.hasDrawn) return alert("आधीच पान उचलले आहे! एक पान टाका.");
 
+      playDrawSound();
       myObj.groups[0].push(drawPile.pop());
       myObj.hasDrawn = true;
       myObj.firstTurnDone = true;
@@ -749,6 +922,7 @@
       if (myObj.hasDrawn) return;
       if (discardPile.length === 0) return;
 
+      playDrawSound();
       myObj.groups[0].push(discardPile.pop());
       myObj.hasDrawn = true;
       myObj.firstTurnDone = true;
@@ -760,6 +934,7 @@
       const myObj = players.find(p => p.id === myPlayerId);
       if (selectedCards.length !== 1 || !myObj.hasDrawn) return;
 
+      playDiscardSound();
       const { groupIdx, cardIdx } = selectedCards[0];
       const discarded = myObj.groups[groupIdx].splice(cardIdx, 1)[0];
       discardPile.push(discarded);
@@ -829,17 +1004,6 @@
       broadcastState('STATE_SYNC');
     }
 
-    function autoSortHand() {
-      const myObj = players.find(p => p.id === myPlayerId);
-      if (!myObj || !myObj.groups) return;
-
-      let allCards = myObj.groups.flat();
-      myObj.groups = autoDivideIntoSuits(allCards);
-      selectedCards = [];
-      updateUI();
-      broadcastState('STATE_SYNC');
-    }
-
     function playerDrop() {
       if (players[currentTurnIndex]?.id !== myPlayerId) return alert("फक्त तुमच्या टर्नवर ड्रॉप करता येतो!");
       const myObj = players.find(p => p.id === myPlayerId);
@@ -872,6 +1036,7 @@
       results.forEach(res => { if (!res.valid) allValid = false; });
 
       if (hasPure && hasSecondSeq && allValid) {
+        playWinSound();
         alert("🎉 अभिनंदन! व्हॅलिड शो! तुम्ही हा राऊंड जिंकलात (0 पॉईंट्स)!");
         players.forEach(p => {
           if (p.id !== myPlayerId && !p.out) {
