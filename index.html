@@ -1,662 +1,377 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="mr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>आपली रमी - 151 Pool</title>
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0d381e" />
-  <link rel="apple-touch-icon" href="logo.png" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    * {
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      touch-action: manipulation;
-    }
-    body {
-      background: radial-gradient(circle at 50% 40%, #155724 0%, #0c3b18 65%, #051d0c 100%);
-      height: 100dvh;
-      overflow: hidden;
-    }
-    .card-overlap {
-      margin-left: -24px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    .card-overlap:first-child {
-      margin-left: 0;
-    }
-    .card-selected {
-      transform: translateY(-20px) scale(1.04) !important;
-      box-shadow: 0 10px 22px rgba(250, 204, 21, 0.75) !important;
-      border-color: #facc15 !important;
-      z-index: 50 !important;
-    }
-    .table-felt {
-      border: 3px solid #b38e2e;
-      box-shadow: inset 0 0 60px rgba(0,0,0,0.85);
-    }
-    @keyframes cardDrop {
-      0%   { transform: translateY(-70px) scale(0.85) rotate(-10deg); opacity: 0; }
-      60%  { transform: translateY(8px) scale(1.03) rotate(2deg); opacity: 1; }
-      100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
-    }
-    .card-draw-anim {
-      animation: cardDrop 0.45s ease-out;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#071b12">
+<title>आपली रमी • 151 Pool</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{
+  --bg:#06130d;--felt:#0c6a3d;--felt2:#084d2e;--gold:#f4c84a;--ink:#101317;
+  --red:#df2e38;--panel:rgba(4,14,10,.88);--muted:#9fb2aa;--line:rgba(255,255,255,.10);
+  --cardW:clamp(48px,12.2vw,72px);--cardH:calc(var(--cardW)*1.42);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#04100b;color:#fff;font-family:Inter,system-ui,-apple-system,"Noto Sans Devanagari",sans-serif}
+button,input{font:inherit}button{cursor:pointer}.hide{display:none!important}
+.app{height:100dvh;display:grid;grid-template-rows:auto 1fr auto;background:
+radial-gradient(circle at 50% 42%,#12814a 0,#0a5a35 35%,#063820 68%,#04160d 100%)}
+.topbar{min-height:54px;padding:7px 10px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+background:rgba(2,10,7,.88);border-bottom:1px solid var(--line);backdrop-filter:blur(12px);z-index:20}
+.life{display:flex;gap:6px;align-items:center;min-width:0}.lifeTag{font-size:11px;padding:5px 7px;border-radius:10px;background:#431419;color:#ff8d94;border:1px solid #8d2830;white-space:nowrap}
+.lifeTag.ok{background:#0c3d2b;color:#66f2b0;border-color:#19895e}.timer{font-weight:900;color:var(--gold);border:1px solid #7c6522;background:#0c120d;padding:6px 11px;border-radius:999px}
+.round{justify-self:end;color:#8ff0c0;font-size:12px;font-weight:900;border:1px solid #258a62;padding:6px 10px;border-radius:999px}
+.arena{min-height:0;position:relative;display:grid;grid-template-rows:auto 1fr auto;padding:7px 8px 5px;gap:6px}
+.opponents{display:flex;justify-content:center;gap:6px;min-height:42px;overflow:hidden}
+.opp{min-width:92px;max-width:145px;background:rgba(3,14,10,.78);border:1px solid #24664d;border-radius:14px;padding:5px 8px;display:flex;gap:7px;align-items:center}
+.avatar{width:28px;height:28px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;background:#087b50;font-weight:900}
+.opp.turn{border-color:var(--gold);box-shadow:0 0 0 2px #f4c84a30}.oppName{font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.oppScore{font-size:10px;color:var(--gold);font-weight:900}
+.tableWrap{min-height:0;display:grid;place-items:center}
+.table{width:min(94vw,660px);height:min(31vh,225px);min-height:142px;border:5px solid #d2a83e;border-radius:46%/24%;
+background:radial-gradient(ellipse,#0f7546 0,#07522f 66%,#053d25 100%);box-shadow:inset 0 0 45px #001c11aa,0 14px 30px #0008;
+display:flex;align-items:center;justify-content:center;gap:clamp(14px,5vw,38px);position:relative}
+.pile{width:64px;height:91px;border-radius:9px;position:relative;display:grid;place-items:center;user-select:none}
+.deck{background:linear-gradient(135deg,#315be4,#17206d);border:3px solid #d6e2ff;box-shadow:5px 4px 0 #1a275f,9px 7px 0 #0f173e}
+.deck:after{content:"बंद डेक";font-size:11px;font-weight:900}.deck small{position:absolute;bottom:7px;font-size:10px;color:#cbd7ff}
+.openCard{background:#fff;border:3px solid var(--gold);color:#111;box-shadow:0 7px 16px #0006}
+.jokerBadge{position:absolute;top:9px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:900;color:#ffe47a;background:#062016cc;border:1px solid #b99831;border-radius:999px;padding:4px 9px;white-space:nowrap}
+.status{justify-self:center;max-width:95%;padding:6px 12px;border-radius:999px;background:#06130de8;border:1px solid #8b6d23;color:#ffe08a;font-size:11px;font-weight:800;text-align:center}
+.bottom{position:relative;background:linear-gradient(180deg,rgba(2,10,7,.93),#020806);border-top:1px solid #1d5d44;padding:6px 7px max(7px,env(safe-area-inset-bottom));z-index:10}
+.toolbar{max-width:980px;margin:auto;display:flex;align-items:center;gap:6px}.score{margin-right:auto;min-width:88px}.score b{color:var(--gold);font-size:16px}.score small{display:block;color:#ff9b9f;font-size:10px}
+.btn{border:0;border-radius:11px;padding:8px 10px;color:#fff;font-size:11px;font-weight:900;box-shadow:inset 0 0 0 1px #ffffff22}.blue{background:#2563eb}.violet{background:#5b45df}.red{background:#b91c2b}.green{background:#078653}.gold{background:#e5b632;color:#151006}.btn:disabled{opacity:.32}
+.handViewport{width:100%;overflow:visible;padding:26px 2px 5px}
+.hand{width:100%;display:flex;align-items:flex-end;justify-content:center;gap:var(--groupGap,8px);padding:0 1px}
+.group{display:flex;align-items:flex-end;position:relative;padding-top:15px;min-height:calc(var(--cardH) + 18px);border-bottom:3px solid #ffffff18;border-radius:0 0 8px 8px}
+.group.good{border-color:#20d58b}.group.bad{border-color:#d94a53}.glabel{position:absolute;top:-5px;left:3px;font-size:9px;font-weight:900;padding:2px 6px;border-radius:999px;background:#092117;color:#83efba;z-index:40;white-space:nowrap}
+.group.bad .glabel{background:#321014;color:#ff949a}
+.card{width:var(--cardW);height:var(--cardH);background:linear-gradient(125deg,#fff 80%,#edf0eb);border:1px solid #d4d8dc;border-radius:9px;color:#15171a;position:relative;flex:0 0 auto;
+box-shadow:0 3px 8px #0007;touch-action:none;transition:transform .12s,box-shadow .12s;margin-left:calc(var(--step,18px) - var(--cardW));overflow:hidden}
+.card:first-of-type,.glabel+.card{margin-left:0}.card.selected{transform:translateY(-14px);box-shadow:0 10px 18px #0009,0 0 0 3px var(--gold);z-index:50}
+.card.redSuit{color:#d5232d}.corner{position:absolute;top:5px;left:6px;font-weight:950;font-size:clamp(14px,4vw,21px);line-height:.9}.corner .s{display:block;font-size:.86em;margin-top:4px}
+.bigSuit{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(27px,7vw,43px);font-weight:900}.jokerText{position:absolute;bottom:5px;right:5px;font-size:8px;font-weight:950;color:#b78600}
+.dropGlow{box-shadow:0 0 0 4px #f4c84a,0 0 28px #f4c84a!important}
+.dragGhost{position:fixed!important;margin:0!important;z-index:300!important;pointer-events:none!important;opacity:.96;transform:rotate(-6deg) scale(1.1);box-shadow:0 18px 35px #000a,0 0 0 3px var(--gold)}
+.card.dragSource{opacity:.35}.group.dragTarget{border-color:var(--gold);background:#f4c84a20}.dropHint{text-align:center;color:#cab975;font-size:9px;font-weight:800;pointer-events:none;padding:3px 0 0}
+.table{border-width:6px;border-color:#c89939;box-shadow:inset 0 0 0 3px #ead38655,inset 0 0 60px #001c11aa,0 10px 0 #422e13,0 22px 34px #0008}
+.table:after{content:'151 POOL · FRIENDS TABLE';position:absolute;bottom:13px;left:0;right:0;text-align:center;font-size:10px;font-weight:950;letter-spacing:2px;color:#e5ce7780;pointer-events:none}
+.pile{cursor:pointer;transition:box-shadow .16s,transform .16s}.pile:active{transform:translateY(-4px)}.openCard.dropGlow{transform:translateY(-6px) scale(1.08)}
+.bottom{box-shadow:0 -9px 28px #00170e80}.btn{border:1px solid #ffffff25;box-shadow:inset 0 1px 2px #ffffff35,0 4px 0 #0005}.btn:active{transform:translateY(2px);box-shadow:inset 0 1px 2px #ffffff35}
+.group{min-width:0}.glabel{top:-11px}.card:not(:last-child) .bigSuit{display:none}
+.modal{position:fixed;inset:0;background:#020806ef;z-index:100;display:grid;place-items:center;padding:18px}
+.panel{width:min(440px,96vw);background:linear-gradient(180deg,#0d2119,#07130e);border:1px solid #315c4b;border-radius:24px;padding:20px;box-shadow:0 25px 80px #000;text-align:center}
+.logo{width:76px;height:76px;border-radius:22px;margin:auto;display:grid;place-items:center;font-size:38px;background:#0b5837;border:2px solid var(--gold)}
+.panel h1{margin:10px 0 3px;color:#ffd85f}.panel p{margin:0 0 16px;color:#9db2aa;font-size:12px}.field{width:100%;border:1px solid #315c4b;background:#04100b;color:#fff;padding:12px 13px;border-radius:12px;outline:none;margin:5px 0}.row{display:flex;gap:8px}.roomInfo{margin-top:12px;padding:11px;border:1px solid #315c4b;border-radius:14px;background:#05150e}.code{font-size:26px;letter-spacing:5px;color:var(--gold);font-weight:950}
+.playersList{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:9px 0}.chip{font-size:11px;background:#0b3a29;border:1px solid #1d7956;padding:5px 8px;border-radius:999px}
+.toast{position:fixed;left:50%;bottom:165px;transform:translateX(-50%);z-index:200;background:#050c09eF;border:1px solid #37634f;color:#fff;padding:9px 14px;border-radius:999px;font-size:12px;font-weight:800;max-width:90%;text-align:center}
+@media(max-width:520px){
+ .topbar{padding:6px}.life{gap:4px}.lifeTag{font-size:9px;padding:4px 5px}.table{height:min(28vh,190px);min-height:135px}
+ .toolbar{gap:4px}.btn{padding:8px 7px;font-size:10px}.score{min-width:78px}.hand{gap:12px;justify-content:flex-start}
+}
+@media(orientation:landscape) and (max-height:600px){
+ :root{--cardW:46px}.topbar{min-height:40px}.arena{padding:3px 8px}.opponents{min-height:34px}.opp{padding:2px 7px}.avatar{width:22px;height:22px}
+ .table{height:25vh;min-height:100px;width:min(62vw,560px)}.pile{width:49px;height:70px}.jokerBadge{top:3px}.status{padding:3px 10px}
+ .bottom{padding-top:3px}.toolbar .btn{padding:5px 8px}.handViewport{padding-top:12px}.group{padding-top:10px}
+}
+</style>
 </head>
-<body class="text-white flex flex-col justify-between font-sans select-none">
-
-  <!-- Splash Screen -->
-  <div id="splash-screen" class="fixed inset-0 z-50 bg-[#051a0b] flex flex-col items-center justify-center transition-opacity duration-700 px-4">
-    <div class="relative flex flex-col items-center max-w-xs w-full text-center">
-      <img src="logo.png" alt="आपली रमी" class="w-44 h-44 rounded-3xl shadow-2xl border-4 border-amber-400 object-cover mb-4 ring-4 ring-amber-400/20" />
-      <h1 class="text-3xl font-black text-amber-400 tracking-wider">आपली रमी</h1>
-      <p class="text-xs text-emerald-400 font-extrabold mt-1 tracking-widest uppercase">151 Pool Table</p>
-      <div class="mt-6 flex items-center gap-2 text-xs text-slate-300 font-semibold bg-black/40 px-4 py-1.5 rounded-full border border-emerald-500/20">
-        <div class="w-3.5 h-3.5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
-        <span>टेबल लोड होत आहे...</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Top Status & Opponents -->
-  <header class="bg-black/60 px-4 py-1.5 flex justify-between items-center border-b border-emerald-500/20 z-10">
-    <!-- Life Rules Tracker (screenshot sarkhe) -->
-    <div class="flex items-center gap-4 text-xs font-bold">
-      <div class="flex items-center gap-1.5">
-        <span class="text-slate-300">1st Life:</span>
-        <span id="first-life-tag" class="px-2 py-0.5 rounded text-[10px] bg-red-950 text-red-400 border border-red-800">अपूर्ण ✗</span>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <span class="text-slate-300">2nd Life:</span>
-        <span id="second-life-tag" class="px-2 py-0.5 rounded text-[10px] bg-red-950 text-red-400 border border-red-800">अपूर्ण ✗</span>
-      </div>
-    </div>
-
-    <!-- Opponent Badges -->
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-1.5 bg-black/50 border border-slate-700 px-2 py-1 rounded-xl">
-        <div class="w-6 h-6 rounded-full bg-sky-600 flex items-center justify-center text-[10px] font-bold">रा</div>
-        <div class="text-[11px] font-bold leading-tight">राहुल <span id="p1-score" class="text-amber-400">0/151</span></div>
-      </div>
-      <div class="flex items-center gap-1.5 bg-black/50 border border-slate-700 px-2 py-1 rounded-xl">
-        <div class="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-bold">स</div>
-        <div class="text-[11px] font-bold leading-tight">सचिन <span id="p2-score" class="text-amber-400">0/151</span></div>
-      </div>
-    </div>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="life"><span id="life1" class="lifeTag">1st Life ✕</span><span id="life2" class="lifeTag">2nd Life ✕</span></div>
+    <div class="timer">⏱ <span id="timer">30</span>s</div>
+    <div class="round">राऊंड <span id="round">1</span></div>
   </header>
 
-  <!-- Table Arena (Declare Box, Open Deck, Closed Deck, Cut Joker) -->
-  <div class="flex-1 flex flex-col justify-center items-center relative px-2">
-    
-    <div id="status-pill" class="mb-3 text-center font-bold text-xs bg-black/75 text-amber-300 px-5 py-1 rounded-full border border-amber-500/30 shadow">
-      तुमची पाळी! डेकमधून एक पान उचला.
+  <main class="arena">
+    <div id="opponents" class="opponents"></div>
+    <div class="tableWrap">
+      <div class="table">
+        <div id="jokerBadge" class="jokerBadge">JOKER —</div>
+        <div id="deck" class="pile deck" onclick="drawClosed()"><small id="deckCount">0</small></div>
+        <div id="openPile" class="pile openCard" onclick="drawOpen()"></div>
+      </div>
     </div>
+    <div id="status" class="status">गेम सुरू करण्यासाठी टेबल तयार करा.</div>
+  </main>
 
-    <!-- Center Felt Mat -->
-    <div class="table-felt bg-emerald-900/70 rounded-3xl p-4 sm:p-6 flex items-center gap-6 relative">
-      
-      <!-- Declare Box (Screenshot sarkha Declare slot) -->
-      <div onclick="declareShow()" class="w-16 h-24 sm:w-18 sm:h-26 border-2 border-dashed border-amber-400/80 bg-emerald-950/80 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-emerald-900 transition text-center p-1 active:scale-95">
-        <span class="text-amber-400 font-black text-xs uppercase leading-tight">DECLARE<br>HERE</span>
-        <span class="text-[9px] text-emerald-300 mt-1">शो करा</span>
+  <section class="bottom">
+    <div class="toolbar">
+      <div class="score"><b id="score">0/151</b><small id="handPts">हातात: 0 pts</small></div>
+      <button class="btn blue" onclick="makeGroup()">ग्रुप</button>
+      <button class="btn violet" onclick="autoSort()">सॉर्ट</button>
+      <button class="btn red" onclick="dropRound()">ड्रॉप</button>
+      <button id="discardBtn" class="btn green" onclick="discardSelected()" disabled>पान टाका</button>
+      <button class="btn gold" onclick="declareHand()">DECLARE</button>
+    </div>
+    <div class="handViewport"><div id="hand" class="hand"></div></div>
+    <div class="dropHint">पान धरून उघड्या पत्त्यावर सोडा • हलके टॅप करून निवडा</div>
+  </section>
+</div>
+
+<div id="lobby" class="modal">
+  <div class="panel">
+    <div class="logo">🃏</div>
+    <h1>आपली रमी</h1>
+    <p>151 Pool • Private Friends Table • No real money</p>
+    <input id="name" class="field" maxlength="16" placeholder="तुमचे नाव">
+    <div class="row">
+      <button class="btn gold" style="flex:1;padding:12px" onclick="createRoom()">+ नवीन टेबल</button>
+      <input id="joinCode" class="field" style="flex:1;margin:0;text-align:center;text-transform:uppercase" maxlength="6" placeholder="ROOM CODE">
+      <button class="btn blue" onclick="joinRoom()">JOIN</button>
+    </div>
+    <div id="waiting" class="roomInfo hide">
+      <div style="font-size:11px;color:#9fb2aa">टेबल कोड</div>
+      <div id="roomCode" class="code">----</div>
+      <div id="connectionStatus" style="font-size:11px;color:#f2ce77;margin:5px 0 8px" role="status"></div>
+      <div id="lobbyPlayers" class="playersList"></div>
+      <div class="row">
+        <button class="btn green" style="flex:1" onclick="shareRoom()">WhatsApp Invite</button>
+        <button id="startBtn" class="btn gold" style="flex:1" onclick="startGame()">खेळ सुरू करा</button>
       </div>
-
-      <!-- Closed Pile -->
-      <div class="relative cursor-pointer active:scale-95 transition" onclick="drawFromClosed()">
-        <div class="w-16 h-24 sm:w-18 sm:h-26 bg-gradient-to-br from-blue-700 via-indigo-900 to-blue-950 border-2 border-blue-300/80 rounded-xl shadow-2xl flex flex-col items-center justify-center">
-          <span class="text-[10px] text-blue-200 font-bold uppercase">बंद डेक</span>
-          <span id="deck-count" class="text-xs font-black text-white mt-1">79</span>
-        </div>
-        <!-- Cut Joker -->
-        <div id="cut-joker-card" class="absolute -bottom-1 -left-4 -z-10 -rotate-12 w-16 h-24 sm:w-18 sm:h-26 bg-white border border-gray-300 rounded-xl shadow flex flex-col justify-between p-1">
-        </div>
-      </div>
-
-      <!-- Open Pile -->
-      <div class="relative cursor-pointer active:scale-95 transition" onclick="drawFromOpen()">
-        <div id="open-card" class="w-16 h-24 sm:w-18 sm:h-26 bg-white border-2 border-amber-400 rounded-xl shadow-2xl flex flex-col justify-between p-1.5">
-        </div>
-        <div class="absolute -bottom-5 inset-x-0 text-center text-[10px] font-bold text-emerald-200">उघडे पान</div>
-      </div>
-
     </div>
   </div>
-
-  <!-- Bottom Hand Groups Area (Exact Screenshot Style) -->
-  <div class="bg-black/80 backdrop-blur-xl border-t border-emerald-600/30 pt-2 pb-3 px-3 flex flex-col gap-2 z-20">
-    
-    <!-- Action Bar -->
-    <div class="flex justify-between items-center max-w-5xl mx-auto w-full">
-      <div class="text-xs font-semibold">
-        <span class="text-slate-400">एकूण गुण:</span> 
-        <b id="user-score" class="text-amber-400 font-black text-sm ml-1">0 / 151</b>
-        <span id="hand-points-tag" class="ml-2 text-[11px] text-red-400 font-bold bg-red-950/80 px-2 py-0.5 rounded border border-red-800">हातातील: ० pts</span>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <button onclick="groupSelectedCards()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-black px-3 py-1.5 rounded-lg shadow border border-blue-400/50">
-          ग्रुप (Group)
-        </button>
-        <button onclick="autoSortHand()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-xs font-black px-3 py-1.5 rounded-lg shadow border border-indigo-400/50">
-          ऑटो-सॉर्ट
-        </button>
-        <button onclick="playerDrop()" class="bg-red-800 hover:bg-red-700 active:scale-95 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-red-500/40">
-          ड्रॉप
-        </button>
-        <button id="discard-btn" onclick="discardSelectedCard()" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-black px-3.5 py-1.5 rounded-lg shadow disabled:opacity-30 disabled:pointer-events-none" disabled>
-          पान टाका
-        </button>
-      </div>
-    </div>
-
-    <!-- Groups Tray -->
-    <div id="groups-container" class="w-full overflow-x-auto no-scrollbar py-2 flex items-start justify-center gap-3 min-h-[125px]">
-      <!-- Dynamic Groups Render Here -->
-    </div>
-
-  </div>
-
-  <script>
-    const SUITS = [
-      { name: 'SPADE', symbol: '♠', color: 'text-zinc-900', order: 1 },
-      { name: 'HEART', symbol: '♥', color: 'text-red-600', order: 2 },
-      { name: 'CLUB', symbol: '♣', color: 'text-zinc-900', order: 3 },
-      { name: 'DIAMOND', symbol: '♦', color: 'text-red-600', order: 4 }
-    ];
-    const RANKS = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-
-    let players = [
-      { id: 0, name: "तुम्ही", score: 0, groups: [], out: false, hasDrawn: false, firstTurnDone: false },
-      { id: 1, name: "राहुल", score: 0, hand: [], out: false, hasDrawn: false },
-      { id: 2, name: "सचिन", score: 0, hand: [], out: false, hasDrawn: false }
-    ];
-
-    let drawPile = [];
-    let discardPile = [];
-    let wildJoker = null;
-    let roundNumber = 1;
-    let currentTurn = 0;
-    let selectedCards = []; // { groupIdx, cardIdx }
-
-    function initDeck() {
-      let deck = [];
-      for (let d = 0; d < 2; d++) {
-        for (let s = 0; s < SUITS.length; s++) {
-          for (let r = 1; r <= 13; r++) {
-            deck.push({ id: `${s}-${r}-${d}`, suit: SUITS[s], rank: r, label: RANKS[r] });
-          }
-        }
-        deck.push({ id: `JOKER-${d}`, suit: { name: 'JOKER', symbol: '★', color: 'text-purple-600', order: 5 }, rank: 0, label: 'JKR' });
-      }
-      return deck.sort(() => Math.random() - 0.5);
-    }
-
-    function isCardJoker(card) {
-      return card.rank === 0 || card.rank === wildJoker.rank;
-    }
-
-    // पत्ते संपले तर डिस्कार्ड ढिगातून (वरचे पान सोडून) पुन्हा शफल करून बंद डेक भरतो
-    function ensureDrawPile() {
-      if (drawPile.length > 0) return;
-      if (discardPile.length <= 1) return; // काहीच उरलं नाही तर काही करता येत नाही
-      const top = discardPile.pop();
-      drawPile = discardPile.sort(() => Math.random() - 0.5);
-      discardPile = [top];
-    }
-
-    // पुढचा जिवंत (out नसलेला) खेळाडू शोधतो
-    function nextActivePlayer(fromId) {
-      for (let step = 1; step <= players.length; step++) {
-        const cand = players[(fromId + step) % players.length];
-        if (!cand.out) return cand.id;
-      }
-      return fromId;
-    }
-
-    function startNewRound() {
-      const active = players.filter(p => !p.out);
-      if (active.length <= 1) {
-        alert(`🏆 गेम संपला! विजेता: ${active[0]?.name || "कोणी नाही"}!`);
-        return;
-      }
-
-      drawPile = initDeck();
-
-      // कट/वाइल्ड जोकर पत्ता नेहमी खरा पत्ता असावा (प्रिंटेड जोकर नको, नाहीतर गोंधळ होतो)
-      let wIdx = drawPile.findIndex(c => c.rank !== 0);
-      wildJoker = drawPile.splice(wIdx, 1)[0];
-
-      discardPile = [drawPile.pop()];
-
-      // 13 कार्ड्स वाटणे
-      let myCards = drawPile.splice(0, 13);
-      players[0].groups = [myCards]; // सुरुवातीला १ ग्रुप
-      players[0].hasDrawn = false;
-      players[0].firstTurnDone = false;
-
-      players[1].hand = drawPile.splice(0, 13);
-      players[2].hand = drawPile.splice(0, 13);
-
-      // सुरुवात नेहमी पहिल्या जिवंत खेळाडूपासून
-      currentTurn = active[0].id;
-      selectedCards = [];
-
-      autoSortHand(); // सुरुवातीला आपोआप रंगानुसार ग्रुप बनवणे
-      updateUI();
-      if (currentTurn === 0) {
-        setBanner("नवीन राऊंड सुरू! डेकमधून एक पान उचला.");
-      } else {
-        setBanner(`नवीन राऊंड सुरू! ${players.find(p=>p.id===currentTurn).name} खेळत आहे...`);
-        setTimeout(botTurn, 700);
-      }
-    }
-
-    // --- Validation Logic Engine (Pure Sequence, Impure, Set) ---
-    function validateGroup(group) {
-      if (group.length < 3) {
-        return { type: 'Invalid', points: sumCardPoints(group), valid: false };
-      }
-
-      // Check Pure Sequence (No Jokers used as wildcards)
-      const hasWild = group.some(c => isCardJoker(c));
-      const sameSuit = group.every(c => c.suit.name === group[0].suit.name && c.rank !== 0);
-
-      if (sameSuit && !hasWild) {
-        let ranks = group.map(c => c.rank).sort((a,b) => a-b);
-        // Handle A-2-3 or Q-K-A
-        let isConsecutive = true;
-        for (let i = 0; i < ranks.length - 1; i++) {
-          if (ranks[i+1] !== ranks[i] + 1) isConsecutive = false;
-        }
-        // Ace as high check (10-J-Q-K-A)
-        if (!isConsecutive && ranks.includes(1)) {
-          let highRanks = group.map(c => c.rank === 1 ? 14 : c.rank).sort((a,b) => a-b);
-          let highConsecutive = true;
-          for (let i = 0; i < highRanks.length - 1; i++) {
-            if (highRanks[i+1] !== highRanks[i] + 1) highConsecutive = false;
-          }
-          if (highConsecutive) isConsecutive = true;
-        }
-
-        if (isConsecutive) {
-          return { type: 'Pure Sequence', points: 0, valid: true, pure: true };
-        }
-      }
-
-      // Check Impure Sequence (Consecutive with Jokers)
-      let nonJokers = group.filter(c => !isCardJoker(c));
-      let jokerCount = group.length - nonJokers.length;
-      let nonJokerSuitSame = nonJokers.every(c => c.suit.name === nonJokers[0].suit.name);
-
-      if (nonJokerSuitSame && nonJokers.length >= 1) {
-        let ranks = [...new Set(nonJokers.map(c => c.rank))].sort((a,b) => a-b);
-        if (ranks.length === nonJokers.length) { // no duplicates
-          let gap = (ranks[ranks.length - 1] - ranks[0] + 1) - ranks.length;
-          if (gap <= jokerCount) {
-            return { type: 'Impure Sequence', points: 0, valid: true, sequence: true };
-          }
-        }
-      }
-
-      // Check Set (Same rank, different suits)
-      let nonJokersSet = group.filter(c => !isCardJoker(c));
-      if (nonJokersSet.length >= 1) {
-        let targetRank = nonJokersSet[0].rank;
-        let allSameRank = nonJokersSet.every(c => c.rank === targetRank);
-        let suitsUsed = new Set(nonJokersSet.map(c => c.suit.name));
-        if (allSameRank && suitsUsed.size === nonJokersSet.length && group.length <= 4) {
-          return { type: 'Set', points: 0, valid: true, set: true };
-        }
-      }
-
-      return { type: 'Invalid', points: sumCardPoints(group), valid: false };
-    }
-
-    function sumCardPoints(cards) {
-      return cards.reduce((sum, c) => {
-        if (isCardJoker(c)) return sum;
-        if (c.rank >= 10 || c.rank === 1) return sum + 10;
-        return sum + c.rank;
-      }, 0);
-    }
-
-    // --- UI Update & Validation Status ---
-    function updateUI() {
-      document.getElementById('user-score').innerText = `${players[0].score} / 151`;
-      document.getElementById('p1-score').innerText = `${players[1].score}/151`;
-      document.getElementById('p2-score').innerText = `${players[2].score}/151`;
-      document.getElementById('deck-count').innerText = drawPile.length;
-
-      // Cut Joker
-      const cutElem = document.getElementById('cut-joker-card');
-      cutElem.innerHTML = `
-        <span class="text-[9px] font-black text-amber-600">JOKER</span>
-        <span class="text-base font-black text-center ${wildJoker.suit.color}">${wildJoker.label}${wildJoker.suit.symbol}</span>
-        <span class="text-[8px] text-right font-bold text-slate-400">WILD</span>
-      `;
-
-      // Open Discard Card
-      const topOpen = discardPile[discardPile.length - 1];
-      const openElem = document.getElementById('open-card');
-      openElem.innerHTML = `
-        <span class="text-xs font-black leading-none ${topOpen.suit.color}">${topOpen.label}</span>
-        <span class="text-2xl font-black text-center leading-none ${topOpen.suit.color}">${topOpen.suit.symbol}</span>
-        <span class="text-xs font-black text-right leading-none ${topOpen.suit.color}">${topOpen.label}</span>
-      `;
-
-      // Validate all player groups
-      let hasPure = false;
-      let hasSecondSeq = false;
-      let totalHandPts = 0;
-
-      const groupResults = players[0].groups.map(grp => validateGroup(grp));
-
-      groupResults.forEach(res => {
-        if (res.pure && !hasPure) {
-          hasPure = true;
-        } else if ((res.pure || res.sequence) && !hasSecondSeq) {
-          hasSecondSeq = true;
-        }
-      });
-
-      // Update 1st Life / 2nd Life Tags
-      const fTag = document.getElementById('first-life-tag');
-      const sTag = document.getElementById('second-life-tag');
-
-      if (hasPure) {
-        fTag.innerText = "पूर्ण ✓";
-        fTag.className = "px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-600";
-      } else {
-        fTag.innerText = "अपूर्ण ✗";
-        fTag.className = "px-2 py-0.5 rounded text-[10px] bg-red-950 text-red-400 border border-red-800";
-      }
-
-      if (hasPure && hasSecondSeq) {
-        sTag.innerText = "पूर्ण ✓";
-        sTag.className = "px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-600";
-      } else {
-        sTag.innerText = "अपूर्ण ✗";
-        sTag.className = "px-2 py-0.5 rounded text-[10px] bg-red-950 text-red-400 border border-red-800";
-      }
-
-      // Calculate hand penalty points
-      groupResults.forEach(res => {
-        if (!hasPure) {
-          totalHandPts += res.points;
-        } else if (!hasSecondSeq) {
-          if (!res.pure) totalHandPts += res.points;
-        } else {
-          if (!res.valid) totalHandPts += res.points;
-        }
-      });
-      totalHandPts = Math.min(80, totalHandPts);
-      document.getElementById('hand-points-tag').innerText = `हातातील: ${totalHandPts} pts`;
-
-      // Discard Button State (Exactly 1 card must be selected after drawing)
-      document.getElementById('discard-btn').disabled = !(players[0].hasDrawn && selectedCards.length === 1);
-
-      // Render Groups Tray
-      const tray = document.getElementById('groups-container');
-      tray.innerHTML = '';
-
-      players[0].groups.forEach((group, gIdx) => {
-        const res = groupResults[gIdx];
-        const groupBox = document.createElement('div');
-        groupBox.className = "flex flex-col items-center bg-black/40 border border-emerald-700/40 rounded-xl p-1.5 shadow-md";
-
-        // Group Header Tag (Screenshot sarkha: Invalid 24, Pure Sequence 0, etc.)
-        const header = document.createElement('div');
-        const isHeaderValid = res.valid && (res.pure || (hasPure && (res.sequence || res.set)));
-        header.className = `text-[10px] font-extrabold px-2 py-0.5 rounded-full mb-1 flex items-center gap-1 ${
-          isHeaderValid ? 'bg-emerald-950 text-emerald-400 border border-emerald-600' : 'bg-red-950 text-red-400 border border-red-800'
-        }`;
-        header.innerHTML = `<span>${isHeaderValid ? '✓' : '⊗'}</span> ${res.type} (${res.valid ? 0 : res.points})`;
-        groupBox.appendChild(header);
-
-        // Group Cards Box
-        const cardsWrap = document.createElement('div');
-        cardsWrap.className = "flex items-center";
-
-        group.forEach((card, cIdx) => {
-          const isJoker = isCardJoker(card);
-          const isSelected = selectedCards.some(s => s.groupIdx === gIdx && s.cardIdx === cIdx);
-          const justDrawn = !!card.justDrawn;
-          card.justDrawn = false; // पुढच्या re-render वेळी परत अ‍ॅनिमेट होऊ नये म्हणून लगेच काढून टाकतो
-
-          const cardElem = document.createElement('div');
-          cardElem.className = `card-overlap w-12 h-20 sm:w-14 sm:h-22 bg-white rounded-lg border-2 ${
-            isSelected ? 'card-selected' : isJoker ? 'border-amber-400 ring-2 ring-amber-300' : 'border-slate-300'
-          } ${justDrawn ? 'card-draw-anim' : ''} p-1 flex flex-col justify-between shadow-lg cursor-pointer`;
-
-          cardElem.onclick = () => toggleSelectCard(gIdx, cIdx);
-          cardElem.innerHTML = `
-            <div class="text-[11px] font-black leading-none ${card.suit.color}">${card.label}</div>
-            <div class="text-base font-black text-center leading-none ${card.suit.color}">${card.suit.symbol}</div>
-            <div class="text-[8px] font-black text-right leading-none ${isJoker ? 'text-amber-600 font-extrabold' : 'text-slate-400'}">${isJoker ? '★ JKR' : card.label}</div>
-          `;
-          cardsWrap.appendChild(cardElem);
-        });
-
-        groupBox.appendChild(cardsWrap);
-        tray.appendChild(groupBox);
-      });
-    }
-
-    function setBanner(text) {
-      document.getElementById('status-pill').innerText = text;
-    }
-
-    // Card Selection
-    function toggleSelectCard(groupIdx, cardIdx) {
-      const idx = selectedCards.findIndex(s => s.groupIdx === groupIdx && s.cardIdx === cardIdx);
-      if (idx !== -1) {
-        selectedCards.splice(idx, 1);
-      } else {
-        selectedCards.push({ groupIdx, cardIdx });
-      }
-      updateUI();
-    }
-
-    // Grouping Action (सिलेक्ट केलेली पाने वेगळ्या ग्रुपमध्ये करणे)
-    function groupSelectedCards() {
-      if (selectedCards.length < 2) return alert("ग्रुप बनवण्यासाठी किमान २ पाने सिलेक्ट करा!");
-
-      // Sort selected reverse to splice correctly
-      selectedCards.sort((a,b) => b.groupIdx - a.groupIdx || b.cardIdx - a.cardIdx);
-
-      const newGroup = [];
-      selectedCards.forEach(s => {
-        const removed = players[0].groups[s.groupIdx].splice(s.cardIdx, 1)[0];
-        newGroup.push(removed);
-      });
-
-      // Filter out empty groups
-      players[0].groups = players[0].groups.filter(g => g.length > 0);
-      players[0].groups.push(newGroup);
-
-      selectedCards = [];
-      updateUI();
-    }
-
-    // Auto Sort (आपोआप रंगांनुसार ४ ग्रुप्समध्ये लावणे)
-    function autoSortHand() {
-      let allCards = players[0].groups.flat();
-      allCards.sort((a, b) => {
-        if (a.suit.order !== b.suit.order) return a.suit.order - b.suit.order;
-        return a.rank - b.rank;
-      });
-
-      // Divide by suits into groups
-      let suitMap = {};
-      allCards.forEach(c => {
-        let key = isCardJoker(c) ? 'JOKER' : c.suit.name;
-        if (!suitMap[key]) suitMap[key] = [];
-        suitMap[key].push(c);
-      });
-
-      players[0].groups = Object.values(suitMap);
-      selectedCards = [];
-      updateUI();
-    }
-
-    function drawFromClosed() {
-      if (currentTurn !== 0 || players[0].out) return alert("तुमची पाळी येईपर्यंत थांबा!");
-      if (players[0].hasDrawn) return alert("तुम्ही आधीच पान उचलले आहे! आता एक पान टाका.");
-
-      ensureDrawPile();
-      if (drawPile.length === 0) return; // दोन्ही ढीग रिकामे असतील तरच (क्वचितच)
-      const card = drawPile.pop();
-      card.justDrawn = true; // हे पान नुकतंच उचललंय — एकदाच अ‍ॅनिमेट होईल
-      // नवीन पान आधीच्या (कदाचित आधीच व्हॅलिड असलेल्या) ग्रुप्समध्ये न मिसळता वेगळ्या ग्रुपमध्ये ठेवतो
-      players[0].groups.push([card]);
-
-      players[0].hasDrawn = true;
-      players[0].firstTurnDone = true;
-      updateUI();
-      setBanner("पान उचलले! आता नको असलेले १ पान सिलेक्ट करून 'पान टाका' दाबा.");
-    }
-
-    function drawFromOpen() {
-      if (currentTurn !== 0 || players[0].out) return alert("तुमची पाळी येईपर्यंत थांबा!");
-      if (players[0].hasDrawn) return alert("तुम्ही आधीच पान उचलले आहे! आता एक पान टाका.");
-      if (discardPile.length === 0) return;
-
-      const card = discardPile.pop();
-      card.justDrawn = true; // हे पान नुकतंच उचललंय — एकदाच अ‍ॅनिमेट होईल
-      players[0].groups.push([card]);
-
-      players[0].hasDrawn = true;
-      players[0].firstTurnDone = true;
-      updateUI();
-      setBanner("उघडे पान उचलले! आता नको असलेले १ पान सिलेक्ट करून टाका.");
-    }
-
-    function discardSelectedCard() {
-      if (selectedCards.length !== 1 || !players[0].hasDrawn) return;
-      const { groupIdx, cardIdx } = selectedCards[0];
-      const discarded = players[0].groups[groupIdx].splice(cardIdx, 1)[0];
-      discardPile.push(discarded);
-
-      players[0].groups = players[0].groups.filter(g => g.length > 0);
-      players[0].hasDrawn = false;
-      selectedCards = [];
-      updateUI();
-
-      currentTurn = nextActivePlayer(0);
-      if (currentTurn === 0) {
-        setBanner("तुमची पाळी! पान उचला.");
-      } else {
-        setBanner(`${players.find(p=>p.id===currentTurn).name} खेळत आहे...`);
-        setTimeout(botTurn, 800);
-      }
-    }
-
-    // --- Declare & Strict Validation (80 Pts Wrong Show Penalty) ---
-    function declareShow() {
-      if (currentTurn !== 0 || !players[0].hasDrawn) {
-        return alert("पान उचलल्यानंतरच डिक्लेअर/शो करता येतो!");
-      }
-
-      // Check Full Validation
-      let hasPure = false;
-      let hasSecondSeq = false;
-      let allValid = true;
-
-      const results = players[0].groups.map(g => validateGroup(g));
-
-      results.forEach(res => {
-        if (res.pure && !hasPure) {
-          hasPure = true;
-        } else if ((res.pure || res.sequence) && !hasSecondSeq) {
-          hasSecondSeq = true;
-        }
-      });
-
-      results.forEach(res => {
-        if (!res.valid) allValid = false;
-      });
-
-      if (hasPure && hasSecondSeq && allValid) {
-        alert("🎉 अभिनंदन! व्हॅलिड शो! तुम्ही हा राऊंड जिंकलात (0 पॉईंट्स)!");
-        // इतरांना त्यांच्या खऱ्या हातातल्या पत्त्यांवरून खरे गुण (रँडम नाही)
-        players.forEach(p => {
-          if (p.id === 0 || p.out) return;
-          p.score += Math.min(80, sumCardPoints(p.hand));
-        });
-      } else {
-        alert("❌ चुकीचा शो (WRONG SHOW)! रमीचे नियम पूर्ण झाले नाहीत (1st & 2nd Life आवश्यक). तुम्हाला थेट ८० पॉईंट्सची पेनल्टी लागत आहे!");
-        players[0].score += 80;
-      }
-
-      checkEliminations();
-      roundNumber++;
-      updateUI();
-      setTimeout(startNewRound, 1500);
-    }
-
-    function playerDrop() {
-      if (currentTurn !== 0 || players[0].out) return alert("फक्त तुमच्या टर्नवर ड्रॉप करता येतो!");
-      const penalty = players[0].firstTurnDone ? 50 : 25;
-      
-      if (confirm(`तुम्हाला ड्रॉप करायचे आहे का? (${penalty} पॉईंट्स लागतील)`)) {
-        players[0].score += penalty;
-        checkEliminations();
-        setBanner(`तुम्ही ड्रॉप घेतला (+${penalty} पॉईंट्स)`);
-        roundNumber++;
-        setTimeout(startNewRound, 1200);
-      }
-    }
-
-    function botTurn() {
-      if (currentTurn === 0) return;
-      let bot = players[currentTurn];
-      if (bot.out) { currentTurn = nextActivePlayer(bot.id); return botTurn(); }
-
-      ensureDrawPile();
-      if (drawPile.length > 0) bot.hand.push(drawPile.pop());
-
-      setTimeout(() => {
-        // रँडमऐवजी सगळ्यात जास्त गुण देणारं (निरुपयोगी) पान टाकतं — जरा हुशार बॉट
-        let worstIdx = 0, worstVal = -1;
-        bot.hand.forEach((c, i) => {
-          const v = isCardJoker(c) ? -1 : (c.rank >= 10 || c.rank === 1 ? 10 : c.rank);
-          if (v > worstVal) { worstVal = v; worstIdx = i; }
-        });
-        discardPile.push(bot.hand.splice(worstIdx, 1)[0]);
-        updateUI();
-        currentTurn = nextActivePlayer(bot.id);
-        if (currentTurn === 0) {
-          setBanner("तुमची पाळी! पान उचला.");
-        } else {
-          setBanner(`${players.find(p=>p.id===currentTurn).name} खेळत आहे...`);
-          setTimeout(botTurn, 700);
-        }
-      }, 700);
-    }
-
-    function checkEliminations() {
-      players.forEach(p => {
-        if (p.score >= 151 && !p.out) {
-          p.out = true;
-          alert(`🚫 ${p.name} चे पॉईंट्स ${p.score} झाले आहेत. 151 पार झाल्यामुळे तो गेममधून बाहेर (OUT) झाला!`);
-        }
-      });
-    }
-
-    startNewRound();
-
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        const splash = document.getElementById('splash-screen');
-        if (splash) {
-          splash.style.opacity = '0';
-          setTimeout(() => splash.remove(), 700);
-        }
-      }, 2000);
-    });
-  </script>
+</div>
+<div id="toast" class="toast hide"></div>
+
+<script>
+const SUITS=[
+ {n:"S",s:"♠",red:false},{n:"H",s:"♥",red:true},{n:"C",s:"♣",red:false},{n:"D",s:"♦",red:true}
+], LABEL=["","A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+const uid=()=>crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now();
+const meId="p_"+uid().slice(0,8);
+let meName="",room="",isHost=false,peer=null,hostConn=null,conns=[];
+let players=[],deck=[],discard=[],wildRank=0,turn=0,roundNo=1,selected=new Set(),timer=30,timerId=null,gameOn=false;
+let drag=null;
+
+function toast(s){let e=document.querySelector("#toast");e.textContent=s;e.classList.remove("hide");clearTimeout(e._t);e._t=setTimeout(()=>e.classList.add("hide"),1800)}
+function me(){return players.find(p=>p.id===meId)}
+function active(){return players[turn]}
+function makePlayer(id,name){return {id,name,score:0,out:false,groups:[],drawn:false,firstTurn:false}}
+function cleanName(){let n=document.querySelector("#name").value.trim();if(!n){toast("आधी तुमचे नाव टाका");return""}return n.slice(0,16)}
+function randomCode(){return Math.random().toString(36).slice(2,6).toUpperCase()}
+
+function connectionStatus(s){document.querySelector("#connectionStatus").textContent=s;toast(s)}
+function ensurePeer(){
+ if(window.Peer)return Promise.resolve();
+ return new Promise((resolve,reject)=>{let script=document.createElement("script");script.src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js";
+  script.onload=()=>window.Peer?resolve():reject(Error("PeerJS missing"));script.onerror=()=>reject(Error("PeerJS failed to load"));document.head.appendChild(script)
+ })
+}
+async function createRoom(){
+ meName=cleanName();if(!meName)return;
+ isHost=true;room=randomCode();players=[makePlayer(meId,meName)];showWaiting();connectionStatus("टेबल जोडत आहे…");
+ document.querySelector("#startBtn").disabled=true;
+ try{await ensurePeer();peer?.destroy();peer=new Peer("apli-rummy-"+room);let creatingPeer=peer;
+  setTimeout(()=>{if(peer===creatingPeer&&!peer.open){connectionStatus("टेबल जोडण्यास वेळ लागतो आहे. Internet तपासा आणि पुन्हा प्रयत्न करा.")}},12000);
+  peer.on("open",()=>{connectionStatus("टेबल तयार! हा कोड मित्रांना पाठवा.");document.querySelector("#startBtn").disabled=false});
+  peer.on("connection",c=>{conns.push(c);c.on("data",d=>onHostData(d,c));c.on("close",()=>{conns=conns.filter(x=>x!==c)})});
+  peer.on("error",e=>{connectionStatus("टेबल जोडता आले नाही ("+(e.type||"network")+"). Internet तपासून पुन्हा नवीन टेबल दाबा.");document.querySelector("#startBtn").disabled=true});
+ }catch(e){connectionStatus("गेमची connection library लोड झाली नाही. Internet तपासून पेज refresh करा.")}
+}
+async function joinRoom(){
+ meName=cleanName();room=document.querySelector("#joinCode").value.trim().toUpperCase();if(!meName)return;if(!/^[A-Z0-9]{4}$/.test(room))return toast("४ अक्षरी room code टाका");
+ isHost=false;showWaiting();connectionStatus("टेबल शोधत आहे…");
+ try{await ensurePeer();peer?.destroy();peer=new Peer();
+  peer.on("open",()=>{hostConn=peer.connect("apli-rummy-"+room,{reliable:true});
+   hostConn.on("open",()=>{connectionStatus("टेबल जोडले. Host खेळ सुरू करेल.");hostConn.send({t:"JOIN",p:makePlayer(meId,meName)})});
+   hostConn.on("data",onClientData);hostConn.on("error",()=>connectionStatus("Room code किंवा internet connection तपासा."));
+  });
+  peer.on("error",e=>connectionStatus("टेबलशी connection झाले नाही ("+(e.type||"network")+")."));
+ }catch(e){connectionStatus("गेमची connection library लोड झाली नाही. Internet तपासून पेज refresh करा.")}
+}
+function showWaiting(){document.querySelector("#waiting").classList.remove("hide");document.querySelector("#roomCode").textContent=room;renderLobby()}
+function renderLobby(){
+ document.querySelector("#lobbyPlayers").innerHTML=players.map(p=>`<span class="chip">👤 ${esc(p.name)}${p.id===meId?" (तुम्ही)":""}</span>`).join("");
+ document.querySelector("#startBtn").classList.toggle("hide",!isHost);
+}
+function onHostData(d,c){
+ if(d.t==="JOIN"){
+  if(gameOn)return c.send({t:"ERR",msg:"गेम आधीच सुरू आहे"});
+  if(players.length>=6)return c.send({t:"ERR",msg:"टेबल full आहे"});
+  if(!players.some(p=>p.id===d.p.id))players.push(d.p); c.pid=d.p.id; broadcast({t:"LOBBY",players});renderLobby();
+ }else if(d.t==="ACTION"){applyAction(d.action,d.pid||c.pid)}
+}
+function onClientData(d){
+ if(d.t==="LOBBY"){players=d.players;renderLobby()}
+ if(d.t==="STATE"){loadState(d.state)}
+ if(d.t==="ERR")toast(d.msg)
+}
+function broadcast(msg){conns.forEach(c=>{if(c.open)c.send(msg)})}
+function state(){return {players,deck,discard,wildRank,turn,roundNo,gameOn}}
+function sync(){if(isHost)broadcast({t:"STATE",state:state()})}
+function request(action){if(isHost)applyAction(action,meId);else if(hostConn?.open)hostConn.send({t:"ACTION",action,pid:meId})}
+function loadState(s){players=s.players;deck=s.deck;discard=s.discard;wildRank=s.wildRank;turn=s.turn;roundNo=s.roundNo;gameOn=s.gameOn;document.querySelector("#lobby").classList.add("hide");selected.clear();resetTimer();render()}
+
+function startGame(){
+ if(!isHost)return;if(players.length<2){players.push(makePlayer("bot","मित्र Bot"))}
+ document.querySelector("#lobby").classList.add("hide");newRound();
+}
+function newDeck(){
+ let a=[];for(let d=0;d<2;d++){for(let s of SUITS)for(let r=1;r<=13;r++)a.push({id:uid(),suit:s.n,symbol:s.s,red:s.red,rank:r,label:LABEL[r]});a.push({id:uid(),suit:"J",symbol:"★",red:false,rank:0,label:"JKR"})}
+ for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a
+}
+function newRound(){
+ if(!isHost)return;let alive=players.filter(p=>!p.out);if(alive.length<=1){alert("🏆 गेम विजेता: "+(alive[0]?.name||"—"));return}
+ deck=newDeck();let cut=deck.pop();wildRank=cut.rank||deck.find(c=>c.rank>0).rank;discard=[deck.pop()];
+ players.forEach(p=>{p.drawn=false;p.firstTurn=false;p.groups=[];if(!p.out){let cards=deck.splice(0,13);p.groups=autoGroups(cards)}})
+ turn=players.findIndex(p=>!p.out);gameOn=true;selected.clear();resetTimer();render();sync();botMaybe()
+}
+function applyAction(a,pid){
+ if(!isHost||!gameOn)return;let p=players.find(x=>x.id===pid);if(!p)return;
+ if(a.k==="DRAW_CLOSED"||a.k==="DRAW_OPEN"){
+  if(active()?.id!==pid||p.drawn)return;
+  let c=a.k==="DRAW_CLOSED"?deck.pop():discard.pop();if(!c)return;p.groups[p.groups.length-1]?.push(c)||p.groups.push([c]);p.drawn=true;p.firstTurn=true;
+ }else if(a.k==="DISCARD"){
+  if(active()?.id!==pid||!p.drawn)return;let c=removeCard(p,a.id);if(!c)return;discard.push(c);p.drawn=false;nextTurn();
+ }else if(a.k==="REORDER"){
+  if(pid!==p.id)return;p.groups=a.groups;
+ }else if(a.k==="DROP"){
+  if(active()?.id!==pid)return;p.score+=p.firstTurn?40:20;endRound();
+ }else if(a.k==="DECLARE"){
+  if(active()?.id!==pid||!p.drawn)return;resolveDeclare(p,a.discardId);
+ }
+ render();sync();botMaybe()
+}
+function removeCard(p,id){for(let g of p.groups){let i=g.findIndex(c=>c.id===id);if(i>=0){let c=g.splice(i,1)[0];p.groups=p.groups.filter(x=>x.length);return c}}}
+function nextTurn(){do{turn=(turn+1)%players.length}while(players[turn].out);resetTimer()}
+function endRound(){players.forEach(p=>{if(p.score>=151)p.out=true});roundNo++;gameOn=false;setTimeout(()=>newRound(),1200)}
+function resolveDeclare(p,discardId){
+ let dc=removeCard(p,discardId);if(dc)discard.push(dc);
+ let rs=p.groups.map(validate),seq=rs.filter(x=>x.sequence).length,pure=rs.some(x=>x.pure),ok=p.groups.flat().length===13&&pure&&seq>=2&&rs.every(x=>x.valid);
+ if(ok){
+  players.forEach(x=>{if(x.id!==p.id&&!x.out)x.score+=handPenalty(x)});
+  alert("🎉 "+p.name+" चा VALID SHOW!");
+ }else{p.score+=80;alert("❌ Wrong Show — 80 points");}
+ endRound()
+}
+function handPenalty(p){let rs=p.groups.map(validate),pure=rs.some(x=>x.pure),seq=rs.filter(x=>x.sequence).length;if(!pure)return Math.min(80,p.groups.flat().reduce((s,c)=>s+points(c),0));return Math.min(80,rs.filter(x=>!x.valid).reduce((s,x)=>s+x.points,0))}
+function isJ(c){return c.rank===0||c.rank===wildRank}
+function points(c){return isJ(c)?0:(c.rank===1||c.rank>=10?10:c.rank)}
+function validate(g){
+ if(!g||g.length<3)return{valid:false,points:g?.reduce((s,c)=>s+points(c),0)||0,type:"Invalid"};
+ let jok=g.filter(isJ),n=g.filter(c=>!isJ(c));
+ if(jok.length===0&&n.every(c=>c.suit===n[0].suit)){
+  let r=n.map(c=>c.rank).sort((a,b)=>a-b);if(consecutive(r)||consecutive(r.map(x=>x===1?14:x).sort((a,b)=>a-b)))return{valid:true,pure:true,sequence:true,points:0,type:"Pure"};
+ }
+ if(n.length&&n.every(c=>c.suit===n[0].suit)){
+  let r=[...new Set(n.map(c=>c.rank))].sort((a,b)=>a-b);if(r.length===n.length){
+   let gap=r.at(-1)-r[0]+1-r.length;if(gap<=jok.length)return{valid:true,sequence:true,points:0,type:"Sequence"};
+   let hi=r.map(x=>x===1?14:x).sort((a,b)=>a-b);gap=hi.at(-1)-hi[0]+1-hi.length;if(gap<=jok.length)return{valid:true,sequence:true,points:0,type:"Sequence"};
+  }
+ }
+ if(g.length<=4&&n.length&&n.every(c=>c.rank===n[0].rank)&&new Set(n.map(c=>c.suit)).size===n.length)return{valid:true,set:true,points:0,type:"Set"};
+ return{valid:false,points:g.reduce((s,c)=>s+points(c),0),type:"Invalid"}
+}
+function consecutive(r){return r.every((x,i)=>i===0||x===r[i-1]+1)}
+function autoGroups(cards){
+ let left=[...cards],out=[];
+ for(let sn of ["S","H","C","D"]){
+  let a=left.filter(c=>c.suit===sn&&!isJ(c)).sort((x,y)=>x.rank-y.rank),run=[];
+  for(let c of a){if(!run.length||c.rank===run.at(-1).rank+1)run.push(c);else run=[c];if(run.length>=3){let take=[...run];out.push(take);let ids=new Set(take.map(x=>x.id));left=left.filter(x=>!ids.has(x.id));break}}
+ }
+ for(let r=1;r<=13;r++){let a=left.filter(c=>c.rank===r&&!isJ(c)),uniq=[...new Map(a.map(c=>[c.suit,c])).values()];if(uniq.length>=3){let take=uniq.slice(0,4);out.push(take);let ids=new Set(take.map(x=>x.id));left=left.filter(x=>!ids.has(x.id))}}
+ if(left.length){let map={};left.forEach(c=>(map[isJ(c)?"J":c.suit]??=[]).push(c));out.push(...Object.values(map))}
+ return out
+}
+
+function drawClosed(){request({k:"DRAW_CLOSED"})}
+function drawOpen(){request({k:"DRAW_OPEN"})}
+function discardSelected(){if(selected.size!==1)return toast("एकच पान निवडा");request({k:"DISCARD",id:[...selected][0]});selected.clear()}
+function dropRound(){if(confirm("हा राऊंड Drop करायचा?"))request({k:"DROP"})}
+function declareHand(){
+ let p=me();if(!p?.drawn)return toast("आधी एक पान उचला");
+ if(selected.size!==1)return toast("DECLARE करण्यासाठी टाकायचे एक पान निवडा");
+ request({k:"DECLARE",discardId:[...selected][0]});selected.clear()
+}
+function makeGroup(){
+ let p=me();if(!p||selected.size<2)return toast("किमान 2 पाने निवडा");
+ let ids=new Set(selected),ng=[],picked=[];p.groups.forEach(g=>{let keep=[];g.forEach(c=>(ids.has(c.id)?picked:keep).push(c));if(keep.length)ng.push(keep)});ng.push(picked);p.groups=ng;selected.clear();pushLayout();render()
+}
+function autoSort(){let p=me();if(!p)return;p.groups=autoGroups(p.groups.flat());selected.clear();pushLayout();render()}
+function pushLayout(){let p=me();if(!p)return;request({k:"REORDER",groups:p.groups})}
+
+function cardHTML(c){
+ let joker=isJ(c),red=c.red?"redSuit":"";
+ return `<div class="card ${red}" data-id="${c.id}">
+  <div class="corner">${c.label}<span class="s">${c.symbol}</span></div>
+  <div class="bigSuit">${c.symbol}</div>${joker?'<div class="jokerText">★ JOKER</div>':""}</div>`
+}
+function openHTML(c){if(!c)return"";return `<div class="corner">${c.label}<span class="s">${c.symbol}</span></div><div class="bigSuit">${c.symbol}</div>`}
+function render(){
+ let p=me()||players[0];if(!p)return;
+ document.querySelector("#round").textContent=roundNo;document.querySelector("#score").textContent=`${p.score}/151`;document.querySelector("#deckCount").textContent=deck.length;
+ let top=discard.at(-1);let op=document.querySelector("#openPile");op.className="pile openCard "+(top?.red?"redSuit":"");op.innerHTML=openHTML(top);
+ document.querySelector("#jokerBadge").textContent="JOKER "+(wildRank?LABEL[wildRank]:"—");
+ document.querySelector("#opponents").innerHTML=players.filter(x=>x.id!==meId).map(x=>`<div class="opp ${active()?.id===x.id?"turn":""}"><div class="avatar">${esc(x.name[0]||"?")}</div><div><div class="oppName">${esc(x.name)}${x.out?" • OUT":""}</div><div class="oppScore">${x.score}/151</div></div></div>`).join("");
+ let rs=p.groups.map(validate),pure=rs.some(x=>x.pure),seq=rs.filter(x=>x.sequence).length;
+ setLife("#life1",pure,"1st Life");setLife("#life2",pure&&seq>=2,"2nd Life");
+ document.querySelector("#handPts").textContent="हातात: "+handPenalty(p)+" pts";
+ let mine=active()?.id===meId;document.querySelector("#status").textContent=mine?(p.drawn?"एक पान निवडा व टाका • cards drag करून arrange करा":"तुमची पाळी — बंद किंवा उघडे पान उचला"):`${active()?.name||"—"} खेळत आहे...`;
+ document.querySelector("#discardBtn").disabled=!(mine&&p.drawn&&selected.size===1);
+ let hand=document.querySelector("#hand");hand.innerHTML="";
+ p.groups.forEach((g,i)=>{let v=validate(g),el=document.createElement("div");el.className="group "+(v.valid?"good":"bad");el.dataset.g=i;el.innerHTML=`<div class="glabel">${v.valid?"✓ "+v.type:"• Group"}</div>`+g.map(cardHTML).join("");hand.appendChild(el)});
+ fitHand();
+ hand.querySelectorAll(".card").forEach(el=>{if(selected.has(el.dataset.id))el.classList.add("selected");el.addEventListener("pointerdown",startCardPointer)});
+}
+// Fit every card into the visible viewport; the left corner of every card stays readable.
+function fitHand(){
+ let groups=document.querySelectorAll("#hand .group"),count=[...groups].reduce((n,g)=>n+g.querySelectorAll(".card").length,0);
+ if(!count)return;
+ let available=document.querySelector(".handViewport").clientWidth-8,gap=groups.length>5?3:7;
+ let width=Math.min(64,Math.max(38,innerWidth*.125)),step=30;
+ while(width>38 && groups.length*width+(count-groups.length)*12+(groups.length-1)*gap>available)width--;
+ if(count>groups.length)step=Math.max(7,Math.min(30,Math.floor((available-groups.length*width-(groups.length-1)*gap)/(count-groups.length))));
+ let hand=document.querySelector("#hand");hand.style.setProperty("--cardW",width+"px");hand.style.setProperty("--cardH",Math.round(width*1.42)+"px");hand.style.setProperty("--step",step+"px");hand.style.setProperty("--groupGap",gap+"px");
+}
+addEventListener("resize",fitHand);
+
+function startCardPointer(e){
+ if(e.button!==0||drag)return;
+ let el=e.currentTarget;
+ drag={id:el.dataset.id,source:el,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,pointer:e.pointerId,moved:false,ghost:null};
+ el.setPointerCapture(e.pointerId);el.addEventListener("pointermove",moveCardPointer);el.addEventListener("pointerup",endCardPointer,{once:true});el.addEventListener("pointercancel",cancelCardPointer,{once:true});
+}
+function moveCardPointer(e){
+ if(!drag||e.pointerId!==drag.pointer)return;
+ drag.x=e.clientX;drag.y=e.clientY;
+ if(!drag.moved&&Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)<7)return;
+ if(!drag.moved){drag.moved=true;drag.ghost=drag.source.cloneNode(true);drag.ghost.classList.add("dragGhost");document.body.appendChild(drag.ghost);drag.source.classList.add("dragSource")}
+ e.preventDefault();drag.ghost.style.left=(e.clientX-22)+"px";drag.ghost.style.top=(e.clientY-28)+"px";
+ document.querySelector("#openPile").classList.toggle("dropGlow",overOpenPile(e.clientX,e.clientY));
+ document.querySelectorAll(".group").forEach(g=>g.classList.remove("dragTarget"));
+ if(!overOpenPile(e.clientX,e.clientY))document.elementFromPoint(e.clientX,e.clientY)?.closest(".group")?.classList.add("dragTarget");
+}
+function overOpenPile(x,y){let b=document.querySelector("#openPile").getBoundingClientRect(),pad=13;return x>=b.left-pad&&x<=b.right+pad&&y>=b.top-pad&&y<=b.bottom+pad}
+function endCardPointer(e){
+ if(!drag||e.pointerId!==drag.pointer)return;let d=drag;drag=null;
+ d.source.removeEventListener("pointermove",moveCardPointer);d.source.classList.remove("dragSource");d.ghost?.remove();
+ document.querySelector("#openPile").classList.remove("dropGlow");document.querySelectorAll(".group").forEach(g=>g.classList.remove("dragTarget"));
+ if(!d.moved){selected.has(d.id)?selected.delete(d.id):selected.add(d.id);render();return}
+ if(overOpenPile(e.clientX,e.clientY)){
+  let p=me();if(active()?.id!==meId||!p?.drawn){toast("आधी तुमच्या पाळीत पान उचला");return}
+  selected.clear();request({k:"DISCARD",id:d.id});if(!isHost)toast("पान टाकले");return;
+ }
+ let hit=document.elementFromPoint(e.clientX,e.clientY),target=hit?.closest(".group");
+ if(!target)return;
+ let p=me(),from=p?.groups.findIndex(g=>g.some(c=>c.id===d.id));if(from<0)return;
+ let to=Number(target.dataset.g),card=p.groups[from].find(c=>c.id===d.id),oldIndex=p.groups[from].indexOf(card);
+ let before=hit.closest(".card"),at=before? p.groups[to].findIndex(c=>c.id===before.dataset.id):p.groups[to].length;
+ if(at<0)at=p.groups[to].length;
+ p.groups[from].splice(p.groups[from].indexOf(card),1);
+ if(from===to&&at>p.groups[to].length)at=p.groups[to].length;
+ if(from===to&&before&&oldIndex<at)at--;
+ if(from===to&&at<0)at=0;
+ p.groups[to].splice(at,0,card);p.groups=p.groups.filter(g=>g.length);
+ selected.clear();pushLayout();render();
+}
+function cancelCardPointer(e){if(!drag||e.pointerId!==drag.pointer)return;drag.ghost?.remove();drag.source.removeEventListener("pointermove",moveCardPointer);drag=null;document.querySelector("#openPile").classList.remove("dropGlow");document.querySelectorAll(".group").forEach(g=>g.classList.remove("dragTarget"))}
+function setLife(sel,ok,label){let e=document.querySelector(sel);e.className="lifeTag"+(ok?" ok":"");e.textContent=label+" "+(ok?"✓":"✕")}
+function resetTimer(){clearInterval(timerId);timer=30;document.querySelector("#timer").textContent=timer;timerId=setInterval(()=>{if(!gameOn)return;timer--;document.querySelector("#timer").textContent=Math.max(0,timer);if(timer<=0){clearInterval(timerId);if(isHost){let p=active();if(p?.id==="bot"){botTurn();return}p.score+=p.firstTurn?40:20;endRound();render();sync()}}},1000)}
+function botMaybe(){if(isHost&&active()?.id==="bot")setTimeout(botTurn,700)}
+function botTurn(){if(!isHost||active()?.id!=="bot")return;let b=active();if(!b.drawn){b.groups.at(-1).push(deck.pop());b.drawn=true;b.firstTurn=true}setTimeout(()=>{let all=b.groups.flat().sort((a,b)=>points(b)-points(a));let c=removeCard(b,all[0].id);discard.push(c);b.drawn=false;nextTurn();render();sync()},650)}
+function shareRoom(){let url=location.href.split("?")[0],txt=`🃏 आपली रमी 151\nRoom: ${room}\n${url}`;if(navigator.share)navigator.share({text:txt});else{navigator.clipboard?.writeText(txt);toast("Invite copy झाला")}}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+</script>
 </body>
 </html>
