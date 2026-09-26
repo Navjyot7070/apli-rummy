@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#071b12">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script src="./pwa.js" defer></script>
 <title>आपली रमी • 151 Pool</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
@@ -174,6 +179,11 @@ box-shadow:0 3px 8px #0007;touch-action:none;transition:transform .12s,box-shado
     <div class="logo">🃏</div>
     <h1>आपली रमी</h1>
     <p>151 Pool • Private Friends Table • No real money</p>
+    <div id="installArea" style="margin-bottom:10px">
+      <button id="installApp" class="btn green" type="button">फोनवर App Install करा</button>
+      <div id="installHelp" role="status" style="font-size:11px;color:#c2d4c8;margin-top:5px"></div>
+    </div>
+    <div id="offlineNotice" class="hide" role="status" style="color:#ffd85f;font-size:12px;margin-bottom:8px">मित्रांसोबत खेळण्यासाठी Internet सुरू करा.</div>
     <input id="name" class="field" maxlength="16" placeholder="तुमचे नाव">
     <div class="row">
       <button class="btn gold" style="flex:1;padding:12px" onclick="createRoom()">+ नवीन टेबल</button>
