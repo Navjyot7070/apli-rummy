@@ -14,14 +14,16 @@
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       touch-action: manipulation;
+      box-sizing: border-box;
     }
     body {
       background: radial-gradient(circle at 50% 35%, #18602c 0%, #0d3b19 60%, #051c0c 100%);
       height: 100dvh;
+      width: 100vw;
       overflow: hidden;
     }
     .card-overlap {
-      margin-left: -20px;
+      margin-left: -18px;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
       touch-action: none;
     }
@@ -29,27 +31,55 @@
       margin-left: 0;
     }
     .card-selected {
-      transform: translateY(-24px) scale(1.06) !important;
-      box-shadow: 0 12px 25px rgba(250, 204, 21, 0.85) !important;
+      transform: translateY(-16px) scale(1.05) !important;
+      box-shadow: 0 8px 20px rgba(250, 204, 21, 0.85) !important;
       border-color: #facc15 !important;
       z-index: 50 !important;
     }
     .table-felt {
-      border: 4px solid #c99e32;
-      box-shadow: inset 0 0 70px rgba(0,0,0,0.9), 0 8px 30px rgba(0,0,0,0.8);
+      border: 3px solid #c99e32;
+      box-shadow: inset 0 0 50px rgba(0,0,0,0.85), 0 6px 20px rgba(0,0,0,0.7);
     }
     .drop-active {
       border-color: #facc15 !important;
-      transform: scale(1.08) !important;
-      box-shadow: 0 0 25px #facc15 !important;
+      transform: scale(1.06) !important;
+      box-shadow: 0 0 20px #facc15 !important;
     }
-    @keyframes pulse-ring {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.05); opacity: 1; }
-      100% { transform: scale(0.95); opacity: 0.8; }
+
+    /* Landscape (आडवा मोबाईल) ऑटो-फिट */
+    @media (orientation: landscape) {
+      .table-felt {
+        padding: 0.4rem 1.2rem !important;
+        gap: 1.25rem !important;
+      }
+      .table-deck-card {
+        width: 3.25rem !important;
+        height: 4.75rem !important;
+      }
+      .hand-card-size {
+        width: 2.6rem !important;
+        height: 4rem !important;
+      }
+      #groups-container {
+        min-height: 80px !important;
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
+      }
     }
-    .turn-glow {
-      animation: pulse-ring 1.5s infinite;
+
+    /* Portrait (सरळ मोबाईल) ऑटो-फिट */
+    @media (orientation: portrait) {
+      .table-deck-card {
+        width: 3.75rem;
+        height: 5.5rem;
+      }
+      .hand-card-size {
+        width: 2.85rem;
+        height: 4.4rem;
+      }
+      #groups-container {
+        min-height: 105px;
+      }
     }
   </style>
 </head>
@@ -58,7 +88,7 @@
   <!-- Splash Screen -->
   <div id="splash-screen" class="fixed inset-0 z-50 bg-[#051a0b] flex flex-col items-center justify-center transition-opacity duration-700 px-4">
     <div class="relative flex flex-col items-center max-w-xs w-full text-center">
-      <img src="logo.png" alt="आपली रमी" class="w-44 h-44 rounded-3xl shadow-2xl border-4 border-amber-400 object-cover mb-4 ring-4 ring-amber-400/20" />
+      <img src="logo.png" alt="आपली रमी" class="w-40 h-40 rounded-3xl shadow-2xl border-4 border-amber-400 object-cover mb-4 ring-4 ring-amber-400/20" />
       <h1 class="text-3xl font-black text-amber-400 tracking-wider">आपली रमी</h1>
       <p class="text-xs text-emerald-400 font-extrabold mt-1 tracking-widest uppercase">151 Pool Table</p>
       <div class="mt-6 flex items-center gap-2 text-xs text-slate-300 font-semibold bg-black/40 px-4 py-1.5 rounded-full border border-emerald-500/20">
@@ -117,25 +147,25 @@
     </div>
   </div>
 
-  <!-- Header: Life Rules & Timer -->
-  <header class="bg-black/70 px-3 py-1.5 flex justify-between items-center border-b border-emerald-500/20 z-10">
-    <div class="flex items-center gap-3">
+  <!-- Header -->
+  <header class="bg-black/70 px-3 py-1 flex justify-between items-center border-b border-emerald-500/20 z-10 shrink-0">
+    <div class="flex items-center gap-2">
       <div class="flex items-center gap-1">
-        <span class="text-[11px] font-bold text-slate-300">1st Life:</span>
-        <span id="first-life-tag" class="px-2 py-0.5 rounded text-[10px] bg-red-950 text-red-400 border border-red-800">अपूर्ण ✗</span>
+        <span class="text-[10px] font-bold text-slate-300">1st:</span>
+        <span id="first-life-tag" class="px-1.5 py-0.2 rounded text-[9px] bg-red-950 text-red-400 border border-red-800">अपूर्ण ✗</span>
       </div>
       <div class="flex items-center gap-1">
-        <span class="text-[11px] font-bold text-slate-300">2nd Life:</span>
-        <span id="second-life-tag" class="px-2 py-0.5 rounded text-[10px] bg-red-950 text-red-400 border border-red-800">अपूर्ण ✗</span>
+        <span class="text-[10px] font-bold text-slate-300">2nd:</span>
+        <span id="second-life-tag" class="px-1.5 py-0.2 rounded text-[9px] bg-red-950 text-red-400 border border-red-800">अपूर्ण ✗</span>
       </div>
     </div>
 
-    <div id="turn-timer-box" class="flex items-center gap-1 bg-black/60 border border-amber-400/40 px-2.5 py-0.5 rounded-full">
+    <div id="turn-timer-box" class="flex items-center gap-1 bg-black/60 border border-amber-400/40 px-2 py-0.5 rounded-full">
       <span class="text-xs">⏱️</span>
       <span id="timer-sec" class="text-xs font-black text-amber-400">30s</span>
     </div>
 
-    <div class="text-xs font-bold bg-emerald-950 border border-emerald-600 px-2.5 py-0.5 rounded-full text-emerald-300">
+    <div class="text-[10px] font-bold bg-emerald-950 border border-emerald-600 px-2 py-0.5 rounded-full text-emerald-300">
       राऊंड <span id="round-num">1</span>
     </div>
   </header>
@@ -144,68 +174,68 @@
   <div class="flex-1 flex flex-col justify-between items-center relative px-2 py-1 overflow-hidden">
     
     <!-- Opponents Section -->
-    <div id="opponents-strip" class="flex justify-around items-center w-full max-w-4xl mx-auto px-2 mt-1"></div>
+    <div id="opponents-strip" class="flex justify-around items-center w-full max-w-4xl mx-auto px-2 shrink-0"></div>
 
     <!-- Center Felt Table -->
-    <div class="table-felt bg-emerald-900/80 rounded-3xl p-4 sm:p-6 flex items-center gap-6 relative my-auto">
+    <div class="table-felt bg-emerald-900/80 rounded-2xl sm:rounded-3xl p-2 sm:p-4 flex items-center justify-center gap-4 sm:gap-6 relative my-auto shrink-0">
       
       <!-- Declare Box -->
-      <div id="declare-drop-zone" onclick="declareShow()" class="w-16 h-24 sm:w-18 sm:h-26 border-2 border-dashed border-amber-400/80 bg-emerald-950/80 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-emerald-900 transition text-center p-1 active:scale-95">
-        <span class="text-amber-400 font-black text-xs uppercase leading-tight">DECLARE<br>HERE</span>
-        <span class="text-[9px] text-emerald-300 mt-1">शो करा</span>
+      <div id="declare-drop-zone" onclick="declareShow()" class="table-deck-card border-2 border-dashed border-amber-400/80 bg-emerald-950/80 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-emerald-900 transition text-center p-1 active:scale-95">
+        <span class="text-amber-400 font-black text-[10px] uppercase leading-tight">DECLARE<br>HERE</span>
+        <span class="text-[8px] text-emerald-300 mt-0.5">शो करा</span>
       </div>
 
-      <!-- Closed Deck (Only manual draw) -->
+      <!-- Closed Deck -->
       <div id="closed-deck-btn" class="relative cursor-pointer active:scale-95 transition" onclick="drawFromClosed()">
-        <div class="w-16 h-24 sm:w-18 sm:h-26 bg-gradient-to-br from-blue-700 via-indigo-900 to-blue-950 border-2 border-blue-300/80 rounded-xl shadow-2xl flex flex-col items-center justify-center">
-          <span class="text-[10px] text-blue-200 font-bold uppercase">बंद डेक</span>
-          <span id="deck-count" class="text-xs font-black text-white mt-1">79</span>
+        <div class="table-deck-card bg-gradient-to-br from-blue-700 via-indigo-900 to-blue-950 border-2 border-blue-300/80 rounded-xl shadow-xl flex flex-col items-center justify-center">
+          <span class="text-[9px] text-blue-200 font-bold uppercase">बंद डेक</span>
+          <span id="deck-count" class="text-xs font-black text-white mt-0.5">79</span>
         </div>
-        <div id="cut-joker-card" class="absolute -bottom-1 -left-4 -z-10 -rotate-12 w-16 h-24 sm:w-18 sm:h-26 bg-white border border-gray-300 rounded-xl shadow flex flex-col justify-between p-1"></div>
+        <div id="cut-joker-card" class="absolute -bottom-1 -left-3 -z-10 -rotate-12 table-deck-card bg-white border border-gray-300 rounded-xl shadow flex flex-col justify-between p-1"></div>
       </div>
 
-      <!-- Open Discard Pile (Manual draw OR Drop here) -->
+      <!-- Open Discard Pile -->
       <div id="discard-drop-zone" class="relative cursor-pointer active:scale-95 transition" onclick="drawFromOpen()">
-        <div id="open-card" class="w-16 h-24 sm:w-18 sm:h-26 bg-white border-2 border-amber-400 rounded-xl shadow-2xl flex flex-col justify-between p-1.5"></div>
-        <div class="absolute -bottom-5 inset-x-0 text-center text-[10px] font-bold text-amber-300">उघडे पान (टाका)</div>
+        <div id="open-card" class="table-deck-card bg-white border-2 border-amber-400 rounded-xl shadow-xl flex flex-col justify-between p-1"></div>
+        <div class="absolute -bottom-4 inset-x-0 text-center text-[9px] font-bold text-amber-300">उघडे पान</div>
       </div>
 
     </div>
 
-    <!-- Active Turn Notification -->
-    <div id="status-pill" class="text-center font-bold text-xs bg-black/75 text-amber-300 px-5 py-1 rounded-full border border-amber-500/30 shadow mb-1">
+    <!-- Active Turn Pill -->
+    <div id="status-pill" class="text-center font-bold text-[11px] bg-black/75 text-amber-300 px-4 py-0.5 rounded-full border border-amber-500/30 shadow shrink-0">
       तुमची पाळी! बंद किंवा उघड्या डेकमधून १ पान उचला.
     </div>
 
   </div>
 
-  <!-- Bottom Hand & Action Bar -->
-  <div class="bg-black/90 backdrop-blur-xl border-t border-emerald-600/30 pt-1.5 pb-2.5 px-3 flex flex-col gap-1.5 z-20">
+  <!-- Bottom Player Hand Tray -->
+  <div class="bg-black/90 backdrop-blur-xl border-t border-emerald-600/30 pt-1 pb-2 px-2 flex flex-col gap-1 z-20 shrink-0">
     <div class="flex justify-between items-center max-w-5xl mx-auto w-full">
-      <div class="text-xs font-semibold">
+      <div class="text-[11px] font-semibold">
         <span class="text-slate-400">एकूण:</span> 
-        <b id="user-score" class="text-amber-400 font-black text-sm ml-0.5">0/151</b>
-        <span id="hand-points-tag" class="ml-1.5 text-[10px] text-red-400 font-bold bg-red-950/80 px-1.5 py-0.5 rounded border border-red-800">हातात: ० pts</span>
+        <b id="user-score" class="text-amber-400 font-black text-xs ml-0.5">0/151</b>
+        <span id="hand-points-tag" class="ml-1 text-[9px] text-red-400 font-bold bg-red-950/80 px-1 py-0.2 rounded border border-red-800">हातात: ० pts</span>
       </div>
 
       <div class="flex items-center gap-1.5">
-        <button onclick="groupSelectedCards()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-[11px] font-black px-2.5 py-1 rounded-lg shadow border border-blue-400/50">
+        <button onclick="groupSelectedCards()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-[10px] font-black px-2 py-1 rounded shadow border border-blue-400/50">
           ग्रुप
         </button>
-        <button onclick="autoSortHand()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-[11px] font-black px-2.5 py-1 rounded-lg shadow border border-indigo-400/50">
+        <button onclick="autoSortHand()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-[10px] font-black px-2 py-1 rounded shadow border border-indigo-400/50">
           ऑटो-सॉर्ट
         </button>
-        <button onclick="playerDrop()" class="bg-red-800 hover:bg-red-700 active:scale-95 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg border border-red-500/40">
+        <button onclick="playerDrop()" class="bg-red-800 hover:bg-red-700 active:scale-95 text-white text-[10px] font-bold px-2 py-1 rounded border border-red-500/40">
           ड्रॉप
         </button>
-        <button id="discard-btn" onclick="discardSelectedCard()" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-[11px] font-black px-3 py-1 rounded-lg shadow disabled:opacity-30 disabled:pointer-events-none" disabled>
+        <button id="discard-btn" onclick="discardSelectedCard()" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-[10px] font-black px-2.5 py-1 rounded shadow disabled:opacity-30 disabled:pointer-events-none" disabled>
           पान टाका
         </button>
       </div>
     </div>
 
     <!-- Hand Groups Container -->
-    <div id="groups-container" class="w-full overflow-x-auto no-scrollbar py-1 flex items-start justify-center gap-2 min-h-[125px]"></div>
+    <div id="groups-container" class="w-full overflow-x-auto no-scrollbar py-0.5 flex items-start justify-center gap-1.5"></div>
   </div>
 
   <script>
@@ -230,14 +260,13 @@
     let discardPile = [];
     let wildJoker = null;
     let roundNumber = 1;
-    let selectedCards = []; // [{ groupIdx, cardIdx }]
+    let selectedCards = [];
 
     let timerValue = 30;
     let timerInterval = null;
 
-    // Mobile Touch Drag State
     let touchDragging = false;
-    let touchCardData = null; // { groupIdx, cardIdx }
+    let touchCardData = null;
     let dragGhost = null;
 
     function initPeer(customId) {
@@ -251,7 +280,7 @@
 
     function createRoom() {
       const name = document.getElementById('player-name-input').value.trim();
-      if (!name) return alert("कृपया तुमचे नाव टाका!");
+      if (!name) return alert("कृपया नाव टाका!");
       myPlayerName = name;
       isHost = true;
       roomCode = Math.floor(Math.random() * 8999 + 1000).toString();
@@ -389,7 +418,6 @@
       broadcastState('GAME_STARTED');
     }
 
-    // Auto-organize cards into standard 4 suit groups
     function autoDivideIntoSuits(cards) {
       cards.sort((a, b) => (a.suit.order !== b.suit.order ? a.suit.order - b.suit.order : a.rank - b.rank));
       let suitMap = {};
@@ -425,7 +453,7 @@
     function handleTimeOut() {
       const activePlayer = players[currentTurnIndex];
       if (activePlayer.id === myPlayerId) {
-        alert("⏱️ ३० सेकंदांची वेळ संपली! न खेळल्यामुळे ड्रॉप (+५० पॉईंट्स) दिला जात आहे.");
+        alert("⏱️ ३० सेकंदांची वेळ संपली! न खेळल्यामुळे ड्रॉप दिला जात आहे.");
         playerDrop();
       }
     }
@@ -500,12 +528,12 @@
         if (p.id !== myPlayerId) {
           const isTurn = idx === currentTurnIndex;
           const box = document.createElement('div');
-          box.className = `flex items-center gap-2 bg-black/60 border ${isTurn ? 'border-amber-400 ring-2 ring-amber-400/50 scale-105' : 'border-slate-700'} px-2.5 py-1 rounded-xl shadow transition`;
+          box.className = `flex items-center gap-1.5 bg-black/60 border ${isTurn ? 'border-amber-400 ring-2 ring-amber-400/50 scale-105' : 'border-slate-700'} px-2 py-0.5 rounded-xl shadow transition`;
           box.innerHTML = `
-            <div class="w-6 h-6 rounded-full bg-emerald-700 flex items-center justify-center text-[10px] font-bold text-white uppercase">${p.name.slice(0,1)}</div>
+            <div class="w-5 h-5 rounded-full bg-emerald-700 flex items-center justify-center text-[9px] font-bold text-white uppercase">${p.name.slice(0,1)}</div>
             <div class="text-left">
-              <div class="text-[11px] font-bold text-slate-200 leading-tight">${p.name}</div>
-              <div class="text-[10px] font-black text-amber-400 leading-tight">${p.score}/151</div>
+              <div class="text-[10px] font-bold text-slate-200 leading-tight">${p.name}</div>
+              <div class="text-[9px] font-black text-amber-400 leading-tight">${p.score}/151</div>
             </div>
           `;
           oppStrip.appendChild(box);
@@ -514,17 +542,17 @@
 
       const cutElem = document.getElementById('cut-joker-card');
       cutElem.innerHTML = `
-        <span class="text-[8px] font-black text-amber-600">JOKER</span>
-        <span class="text-base font-black text-center ${wildJoker.suit.color}">${wildJoker.label}${wildJoker.suit.symbol}</span>
-        <span class="text-[7px] text-right font-bold text-slate-400">WILD</span>
+        <span class="text-[7px] font-black text-amber-600">JOKER</span>
+        <span class="text-sm font-black text-center ${wildJoker.suit.color}">${wildJoker.label}${wildJoker.suit.symbol}</span>
+        <span class="text-[6px] text-right font-bold text-slate-400">WILD</span>
       `;
 
       const topOpen = discardPile[discardPile.length - 1];
       const openElem = document.getElementById('open-card');
       openElem.innerHTML = `
-        <span class="text-xs font-black leading-none ${topOpen.suit.color}">${topOpen.label}</span>
-        <span class="text-2xl font-black text-center leading-none ${topOpen.suit.color}">${topOpen.suit.symbol}</span>
-        <span class="text-xs font-black text-right leading-none ${topOpen.suit.color}">${topOpen.label}</span>
+        <span class="text-[10px] font-black leading-none ${topOpen.suit.color}">${topOpen.label}</span>
+        <span class="text-xl font-black text-center leading-none ${topOpen.suit.color}">${topOpen.suit.symbol}</span>
+        <span class="text-[10px] font-black text-right leading-none ${topOpen.suit.color}">${topOpen.label}</span>
       `;
 
       let hasPure = false;
@@ -542,10 +570,10 @@
       const sTag = document.getElementById('second-life-tag');
 
       fTag.innerText = hasPure ? "पूर्ण ✓" : "अपूर्ण ✗";
-      fTag.className = hasPure ? "px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-600" : "px-2 py-0.5 rounded text-[10px] bg-red-950 text-red-400 border border-red-800";
+      fTag.className = hasPure ? "px-1.5 py-0.2 rounded text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-600" : "px-1.5 py-0.2 rounded text-[9px] bg-red-950 text-red-400 border border-red-800";
 
       sTag.innerText = (hasPure && hasSecondSeq) ? "पूर्ण ✓" : "अपूर्ण ✗";
-      sTag.className = (hasPure && hasSecondSeq) ? "px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-600" : "px-2 py-0.5 rounded text-[10px] bg-red-950 text-red-400 border border-red-800";
+      sTag.className = (hasPure && hasSecondSeq) ? "px-1.5 py-0.2 rounded text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-600" : "px-1.5 py-0.2 rounded text-[9px] bg-red-950 text-red-400 border border-red-800";
 
       groupResults.forEach(res => {
         if (!hasPure) totalHandPts += res.points;
@@ -558,7 +586,6 @@
       const isMyTurn = players[currentTurnIndex]?.id === myPlayerId;
       document.getElementById('discard-btn').disabled = !(isMyTurn && myObj.hasDrawn && selectedCards.length === 1);
 
-      // Deck highlighting
       const closedDeck = document.getElementById('closed-deck-btn');
       const openDeck = document.getElementById('discard-drop-zone');
       if (isMyTurn && !myObj.hasDrawn) {
@@ -571,36 +598,34 @@
         document.getElementById('status-pill').innerText = isMyTurn ? "नको असलेले पान ओढून (Drag) उघड्या पानावर टाका." : `${players[currentTurnIndex]?.name} खेळत आहे...`;
       }
 
-      // Render Groups with Mobile Touch Drag Support
       const tray = document.getElementById('groups-container');
       tray.innerHTML = '';
 
       (myObj.groups || []).forEach((group, gIdx) => {
         const res = groupResults[gIdx];
         const groupBox = document.createElement('div');
-        groupBox.className = "flex flex-col items-center bg-black/45 border-2 border-emerald-700/50 rounded-2xl p-1.5 shadow-md min-w-[75px]";
+        groupBox.className = "flex flex-col items-center bg-black/45 border-2 border-emerald-700/50 rounded-xl p-1 shadow-md min-w-[70px]";
 
         const header = document.createElement('div');
         const isHeaderValid = res.valid && (res.pure || (hasPure && (res.sequence || res.set)));
-        header.className = `text-[9px] font-extrabold px-2 py-0.5 rounded-full mb-1 flex items-center gap-1 ${
+        header.className = `text-[8px] font-extrabold px-1.5 py-0.2 rounded-full mb-0.5 flex items-center gap-0.5 ${
           isHeaderValid ? 'bg-emerald-950 text-emerald-400 border border-emerald-600' : 'bg-red-950 text-red-400 border border-red-800'
         }`;
         header.innerHTML = `<span>${isHeaderValid ? '✓' : '⊗'}</span> ${res.type} (${res.valid ? 0 : res.points})`;
         groupBox.appendChild(header);
 
         const cardsWrap = document.createElement('div');
-        cardsWrap.className = "flex items-center min-h-[88px]";
+        cardsWrap.className = "flex items-center min-h-[75px]";
 
         group.forEach((card, cIdx) => {
           const isJoker = isCardJoker(card);
           const isSelected = selectedCards.some(s => s.groupIdx === gIdx && s.cardIdx === cIdx);
 
           const cardElem = document.createElement('div');
-          cardElem.className = `card-overlap w-11 h-18 sm:w-13 sm:h-20 bg-white rounded-lg border-2 ${
+          cardElem.className = `card-overlap hand-card-size bg-white rounded-lg border-2 ${
             isSelected ? 'card-selected' : isJoker ? 'border-amber-400 ring-2 ring-amber-300' : 'border-slate-300'
           } p-1 flex flex-col justify-between shadow-lg cursor-pointer`;
 
-          // Mobile Touch Drag Listeners
           cardElem.addEventListener('touchstart', (e) => onTouchStartCard(e, gIdx, cIdx), { passive: false });
           cardElem.addEventListener('touchmove', onTouchMoveCard, { passive: false });
           cardElem.addEventListener('touchend', onTouchEndCard, { passive: false });
@@ -611,9 +636,9 @@
           };
 
           cardElem.innerHTML = `
-            <div class="text-[11px] font-black leading-none ${card.suit.color}">${card.label}</div>
-            <div class="text-base font-black text-center leading-none ${card.suit.color}">${card.suit.symbol}</div>
-            <div class="text-[8px] font-black text-right leading-none ${isJoker ? 'text-amber-600 font-extrabold' : 'text-slate-400'}">${isJoker ? '★ JKR' : card.label}</div>
+            <div class="text-[10px] font-black leading-none ${card.suit.color}">${card.label}</div>
+            <div class="text-sm font-black text-center leading-none ${card.suit.color}">${card.suit.symbol}</div>
+            <div class="text-[7px] font-black text-right leading-none ${isJoker ? 'text-amber-600 font-extrabold' : 'text-slate-400'}">${isJoker ? '★ JKR' : card.label}</div>
           `;
           cardsWrap.appendChild(cardElem);
         });
@@ -622,8 +647,8 @@
 
         if (selectedCards.length > 0 && !selectedCards.every(s => s.groupIdx === gIdx)) {
           const moveBtn = document.createElement('button');
-          moveBtn.className = "mt-1 text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full hover:bg-amber-400 hover:text-black";
-          moveBtn.innerText = "येथे हलवा ↵";
+          moveBtn.className = "mt-0.5 text-[8px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40 px-1.5 py-0.2 rounded-full hover:bg-amber-400 hover:text-black";
+          moveBtn.innerText = "हलवा ↵";
           moveBtn.onclick = (e) => {
             e.stopPropagation();
             moveSelectedToGroup(gIdx);
@@ -635,7 +660,6 @@
       });
     }
 
-    // --- Mobile Touch Drag & Drop Logic ---
     function onTouchStartCard(e, gIdx, cIdx) {
       const myObj = players.find(p => p.id === myPlayerId);
       if (players[currentTurnIndex]?.id !== myPlayerId || !myObj.hasDrawn) return;
@@ -662,7 +686,6 @@
       dragGhost.style.left = `${touch.clientX - 25}px`;
       dragGhost.style.top = `${touch.clientY - 40}px`;
 
-      // Check drop targets
       const discardBox = document.getElementById('discard-drop-zone').getBoundingClientRect();
       const declareBox = document.getElementById('declare-drop-zone').getBoundingClientRect();
 
@@ -693,7 +716,6 @@
       const discardBox = document.getElementById('discard-drop-zone').getBoundingClientRect();
       const declareBox = document.getElementById('declare-drop-zone').getBoundingClientRect();
 
-      // Dropped onto Discard Pile
       if (touch.clientX >= discardBox.left && touch.clientX <= discardBox.right &&
           touch.clientY >= discardBox.top && touch.clientY <= discardBox.bottom) {
         selectedCards = [touchCardData];
@@ -701,7 +723,6 @@
         return;
       }
 
-      // Dropped onto Declare Box
       if (touch.clientX >= declareBox.left && touch.clientX <= declareBox.right &&
           touch.clientY >= declareBox.top && touch.clientY <= declareBox.bottom) {
         selectedCards = [touchCardData];
@@ -710,7 +731,6 @@
       }
     }
 
-    // --- Turn Mechanics (Manual Pickup only) ---
     function drawFromClosed() {
       const myObj = players.find(p => p.id === myPlayerId);
       if (players[currentTurnIndex]?.id !== myPlayerId) return alert("तुमची पाळी येईपर्यंत थांबा!");
@@ -726,7 +746,7 @@
     function drawFromOpen() {
       const myObj = players.find(p => p.id === myPlayerId);
       if (players[currentTurnIndex]?.id !== myPlayerId) return alert("तुमची पाळी येईपर्यंत थांबा!");
-      if (myObj.hasDrawn) return; // If already drawn, click here does nothing (use drag or button to discard)
+      if (myObj.hasDrawn) return;
       if (discardPile.length === 0) return;
 
       myObj.groups[0].push(discardPile.pop());
